@@ -3,7 +3,7 @@ import { format, startOfMonth, endOfMonth, addMonths, subMonths, eachDayOfInterv
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useListVideos, getListVideosQueryKey, Video } from "@workspace/api-client-react";
-import { STATUS_COLORS } from "@/lib/constants";
+import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { VideoDialog } from "@/components/video-dialog";
 
@@ -67,6 +67,15 @@ export default function CalendarPage() {
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3 pb-2">
+        {(Object.keys(STATUS_LABELS) as Array<keyof typeof STATUS_LABELS>).map((s) => (
+          <div key={s} className="flex items-center gap-1.5">
+            <span className={`inline-block h-3 w-3 rounded-sm border ${STATUS_COLORS[s]}`} />
+            <span className="text-xs text-muted-foreground">{STATUS_LABELS[s]}</span>
+          </div>
+        ))}
       </div>
 
       <div className="grid grid-cols-7 gap-px rounded-lg bg-border border overflow-hidden">
