@@ -106,7 +106,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         <div className="border-t px-2 py-2 space-y-1">
           {!collapsed && user && (
             <div className="px-2 py-1">
-              <p className="text-xs font-medium truncate">{user.name ?? user.email}</p>
+              <p className="text-xs font-medium truncate">{user.name ?? user.username}</p>
               <p className="text-xs text-muted-foreground capitalize">
             {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : "Membro"}
           </p>

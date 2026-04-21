@@ -4,7 +4,7 @@ export type UserRole = "admin" | "operator" | "member";
 
 export interface AuthUser {
   id: number;
-  email: string;
+  username: string;
   role: UserRole;
   teamMemberId: number | null;
   name: string | null;
@@ -13,7 +13,7 @@ export interface AuthUser {
 interface AuthContextValue {
   user: AuthUser | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<string | null>;
+  login: (username: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
 }
 
@@ -59,10 +59,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchMe();
   }, [fetchMe]);
 
-  const login = useCallback(async (email: string, password: string): Promise<string | null> => {
+  const login = useCallback(async (username: string, password: string): Promise<string | null> => {
     const res = await apiFetch("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ username, password }),
     });
     if (res.ok) {
       const data = await res.json();

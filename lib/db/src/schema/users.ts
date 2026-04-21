@@ -3,7 +3,7 @@ import { teamMembersTable } from "./team-members";
 
 export const usersTable = pgTable("users", {
   id: serial("id").primaryKey(),
-  email: text("email").notNull().unique(),
+  username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   role: text("role").notNull().default("member"),
   teamMemberId: integer("team_member_id").references(() => teamMembersTable.id, { onDelete: "set null" }),

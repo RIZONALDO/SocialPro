@@ -21,22 +21,22 @@ router.get("/auth/me", async (req, res) => {
     const [member] = await db.select().from(teamMembersTable).where(eq(teamMembersTable.id, user.teamMemberId));
     name = member?.name ?? null;
   }
-  return res.json({ id: user.id, email: user.email, role: user.role, teamMemberId: user.teamMemberId, name });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name });
 });
 
 // POST /api/auth/login
 router.post("/auth/login", async (req, res) => {
-  const { email, password } = req.body as { email?: string; password?: string };
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email e senha são obrigatórios" });
+  const { username, password } = req.body as { username?: string; password?: string };
+  if (!username || !password) {
+    return res.status(400).json({ error: "Usuário e senha são obrigatórios" });
   }
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.email, email.toLowerCase().trim()));
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username.toLowerCase().trim()));
   if (!user) {
-    return res.status(401).json({ error: "Email ou senha inválidos" });
+    return res.status(401).json({ error: "Usuário ou senha inválidos" });
   }
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
-    return res.status(401).json({ error: "Email ou senha inválidos" });
+    return res.status(401).json({ error: "Usuário ou senha inválidos" });
   }
   (req.session as { userId?: number }).userId = user.id;
   let name: string | null = null;
@@ -44,7 +44,7 @@ router.post("/auth/login", async (req, res) => {
     const [member] = await db.select().from(teamMembersTable).where(eq(teamMembersTable.id, user.teamMemberId));
     name = member?.name ?? null;
   }
-  return res.json({ id: user.id, email: user.email, role: user.role, teamMemberId: user.teamMemberId, name });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name });
 });
 
 // POST /api/auth/logout
@@ -55,14 +55,14 @@ router.post("/auth/logout", (req, res) => {
 
 // POST /api/auth/setup — create first admin or any user (admin only after first user)
 router.post("/auth/setup", async (req, res) => {
-  const { email, password, role, teamMemberId } = req.body as {
-    email?: string;
+  const { username, password, role, teamMemberId } = req.body as {
+    username?: string;
     password?: string;
     role?: string;
     teamMemberId?: number;
   };
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email e senha são obrigatórios" });
+  if (!username || !password) {
+    return res.status(400).json({ error: "Usuário e senha são obrigatórios" });
   }
 
   const existing = await db.select().from(usersTable).limit(1);
@@ -77,23 +77,23 @@ router.post("/auth/setup", async (req, res) => {
     }
   }
 
-  const [exists] = await db.select().from(usersTable).where(eq(usersTable.email, email.toLowerCase().trim()));
+  const [exists] = await db.select().from(usersTable).where(eq(usersTable.username, username.toLowerCase().trim()));
   if (exists) {
-    return res.status(409).json({ error: "Email já cadastrado" });
+    return res.status(409).json({ error: "Nome de usuário já cadastrado" });
   }
 
   const hash = await bcrypt.hash(password, 12);
   const [created] = await db
     .insert(usersTable)
     .values({
-      email: email.toLowerCase().trim(),
+      username: username.toLowerCase().trim(),
       passwordHash: hash,
       role: isFirst ? "admin" : (role === "admin" ? "admin" : role === "operator" ? "operator" : "member"),
       teamMemberId: teamMemberId ?? null,
     })
     .returning();
 
-  return res.status(201).json({ id: created.id, email: created.email, role: created.role });
+  return res.status(201).json({ id: created.id, username: created.username, role: created.role });
 });
 
 // GET /api/auth/has-users — check if any user exists (to show setup screen)
@@ -111,7 +111,7 @@ router.get("/users", async (req, res) => {
 
   const users = await db.select({
     id: usersTable.id,
-    email: usersTable.email,
+    username: usersTable.username,
     role: usersTable.role,
     teamMemberId: usersTable.teamMemberId,
     createdAt: usersTable.createdAt,

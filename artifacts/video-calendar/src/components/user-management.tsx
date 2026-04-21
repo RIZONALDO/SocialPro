@@ -12,7 +12,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 interface AppUser {
   id: number;
-  email: string;
+  username: string;
   role: string;
   teamMemberId: number | null;
   name: string | null;
@@ -25,7 +25,7 @@ async function fetchUsers(): Promise<AppUser[]> {
 }
 
 async function createUser(payload: {
-  email: string;
+  username: string;
   password: string;
   role: string;
   teamMemberId?: number;
@@ -59,7 +59,7 @@ export function UserManagement() {
   });
   const { toast } = useToast();
 
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("member");
   const [teamMemberId, setTeamMemberId] = useState<string>("none");
@@ -78,7 +78,7 @@ export function UserManagement() {
     e.preventDefault();
     setCreating(true);
     const err = await createUser({
-      email,
+      username,
       password,
       role,
       teamMemberId: teamMemberId && teamMemberId !== "none" ? Number(teamMemberId) : undefined,
@@ -88,7 +88,7 @@ export function UserManagement() {
       toast({ title: err, variant: "destructive" });
     } else {
       toast({ title: "Usuário criado com sucesso" });
-      setEmail("");
+      setUsername("");
       setPassword("");
       setRole("member");
       setTeamMemberId("none");
@@ -128,8 +128,8 @@ export function UserManagement() {
             {users.map((u) => (
               <li key={u.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-medium truncate">{u.name ?? u.email}</p>
-                  <p className="text-xs text-muted-foreground truncate">{u.email}</p>
+                  <p className="text-sm font-medium truncate">{u.name ?? u.username}</p>
+                  <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                   <Badge
@@ -162,13 +162,14 @@ export function UserManagement() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
-            <Label htmlFor="u-email">Email</Label>
+            <Label htmlFor="u-username">Usuário</Label>
             <Input
-              id="u-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemplo.com"
+              id="u-username"
+              type="text"
+              autoCapitalize="none"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="ex: joao.silva"
               required
             />
           </div>

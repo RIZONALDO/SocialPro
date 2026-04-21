@@ -18,13 +18,13 @@ async function checkHasUsers(): Promise<boolean> {
   }
 }
 
-async function setupAdmin(email: string, password: string): Promise<string | null> {
+async function setupAdmin(username: string, password: string): Promise<string | null> {
   try {
     const res = await fetch(`${BASE}/api/auth/setup`, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role: "admin" }),
+      body: JSON.stringify({ username, password, role: "admin" }),
     });
     if (res.ok) return null;
     const data = await res.json();
@@ -37,7 +37,7 @@ async function setupAdmin(email: string, password: string): Promise<string | nul
 export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
   const { login } = useAuth();
   const [hasUsers, setHasUsers] = useState<boolean | null>(null);
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -54,10 +54,10 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
     setLoading(true);
     try {
       if (isSetup) {
-        const err = await setupAdmin(email, password);
+        const err = await setupAdmin(username, password);
         if (err) { setError(err); return; }
       }
-      const err = await login(email, password);
+      const err = await login(username, password);
       if (err) { setError(err); return; }
       onSuccess();
     } finally {
@@ -94,14 +94,15 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="username">Usuário</Label>
               <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
+                id="username"
+                type="text"
+                autoComplete="username"
+                autoCapitalize="none"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="seu.usuario"
                 required
               />
             </div>
