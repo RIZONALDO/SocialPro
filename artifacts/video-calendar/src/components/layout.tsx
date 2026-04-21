@@ -61,16 +61,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           collapsed ? "w-[56px]" : "w-64"
         }`}
       >
-        {/* Collapse toggle — centered vertically on the right edge */}
-        <button
-          onClick={() => setCollapsed((c) => !c)}
-          title={collapsed ? "Expandir menu" : "Recolher menu"}
-          className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md text-muted-foreground hover:text-primary transition-colors"
-        >
-          {collapsed
-            ? <PanelLeftOpen className="h-3 w-3" />
-            : <PanelLeftClose className="h-3 w-3" />}
-        </button>
         {/* Logo row */}
         <div className="flex h-14 items-center border-b px-3 lg:h-[60px] gap-2 overflow-hidden">
           <Link href={user?.role === "admin" ? "/" : "/corrida-bonus"} className="flex items-center gap-2 font-semibold min-w-0 flex-1 overflow-hidden">
@@ -110,6 +100,31 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </li>
               );
             })}
+
+            {/* Toggle button — below last nav item */}
+            <li className="mt-2">
+              {collapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setCollapsed(false)}
+                      className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                    >
+                      <PanelLeftOpen className="h-4 w-4 flex-shrink-0" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Expandir menu</TooltipContent>
+                </Tooltip>
+              ) : (
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                >
+                  <PanelLeftClose className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate">Recolher menu</span>
+                </button>
+              )}
+            </li>
           </ul>
         </nav>
 
