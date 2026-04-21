@@ -64,6 +64,7 @@ export interface UpdateTeamMemberBody {
 export interface AppSettings {
   appName: string;
   logoUrl?: string | null;
+  calendarClientName?: string | null;
 }
 
 export interface Duo {

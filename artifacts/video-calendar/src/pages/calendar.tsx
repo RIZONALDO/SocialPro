@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, eachDayOfInterval, isSameMonth, isToday, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useListVideos, getListVideosQueryKey, Video } from "@workspace/api-client-react";
+import { useListVideos, getListVideosQueryKey, Video, useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { VideoDialog } from "@/components/video-dialog";
@@ -15,6 +15,10 @@ export default function CalendarPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [dayDetailsOpen, setDayDetailsOpen] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<Date | null>(null);
+  const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
+  const calendarTitle = settings?.calendarClientName
+    ? `Calendário ${settings.calendarClientName}`
+    : "Calendário";
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -68,7 +72,7 @@ export default function CalendarPage() {
   return (
     <div className="flex flex-col h-full space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Calendário</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{calendarTitle}</h1>
         <Button onClick={openNewVideoDialog}>
           <Plus className="h-4 w-4 mr-2" />
           Novo Vídeo

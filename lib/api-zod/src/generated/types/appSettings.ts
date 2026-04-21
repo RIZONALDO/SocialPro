@@ -9,4 +9,5 @@
 export interface AppSettings {
   appName: string;
   logoUrl?: string | null;
+  calendarClientName?: string | null;
 }

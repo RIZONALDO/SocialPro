@@ -281,16 +281,19 @@ export const DeleteTeamMemberParams = zod.object({
 export const GetSettingsResponse = zod.object({
   appName: zod.string(),
   logoUrl: zod.string().nullish(),
+  calendarClientName: zod.string().nullish(),
 });
 
 export const UpdateSettingsBody = zod.object({
   appName: zod.string(),
   logoUrl: zod.string().nullish(),
+  calendarClientName: zod.string().nullish(),
 });
 
 export const UpdateSettingsResponse = zod.object({
   appName: zod.string(),
   logoUrl: zod.string().nullish(),
+  calendarClientName: zod.string().nullish(),
 });
 
 export const ListDuosResponseItem = zod.object({

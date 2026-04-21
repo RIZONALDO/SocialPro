@@ -414,6 +414,7 @@ components:
       properties:
         appName: { type: string }
         logoUrl: { type: string, nullable: true }
+        calendarClientName: { type: string, nullable: true }
       required: [appName]
 
     Duo:
