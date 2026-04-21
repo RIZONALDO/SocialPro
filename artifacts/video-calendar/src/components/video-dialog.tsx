@@ -42,6 +42,8 @@ import {
   useCreateVideo,
   useUpdateVideo,
   useListTeamMembers,
+  useListDuos,
+  getListDuosQueryKey,
   VideoStatus,
   Video,
   getGetDashboardSummaryQueryKey,
@@ -51,6 +53,7 @@ import {
 import { STATUS_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { Users } from "lucide-react";
 
 const formSchema = z.object({
   title: z.string().min(1, "Título é obrigatório"),
@@ -184,6 +187,38 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
       );
     }
   };
+
+  const { data: duos } = useListDuos({ query: { queryKey: getListDuosQueryKey() } });
+
+  const watchedEditorId = form.watch("editorId");
+  const watchedCaptadorId = form.watch("captadorId");
+
+  // Auto-fill captador when editor is selected
+  useEffect(() => {
+    if (!watchedEditorId || !duos) return;
+    const duo = duos.find((d) => d.editorId === watchedEditorId);
+    if (duo?.captadorId != null && form.getValues("captadorId") !== duo.captadorId) {
+      form.setValue("captadorId", duo.captadorId);
+    }
+  }, [watchedEditorId, duos]);
+
+  // Auto-fill editor when captador is selected
+  useEffect(() => {
+    if (!watchedCaptadorId || !duos) return;
+    const duo = duos.find((d) => d.captadorId === watchedCaptadorId);
+    if (duo?.editorId != null && form.getValues("editorId") !== duo.editorId) {
+      form.setValue("editorId", duo.editorId);
+    }
+  }, [watchedCaptadorId, duos]);
+
+  // Find the duo that matches the current editor+captador combination
+  const matchedDuo = duos?.find(
+    (d) =>
+      d.editorId === watchedEditorId &&
+      d.captadorId === watchedCaptadorId &&
+      watchedEditorId != null &&
+      watchedCaptadorId != null
+  ) ?? null;
 
   const isPending = createVideo.isPending || updateVideo.isPending;
 
@@ -395,6 +430,16 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                 )}
               />
             </div>
+
+            {matchedDuo && (
+              <div className="flex items-center gap-2 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                <Users className="h-4 w-4 text-primary flex-shrink-0" />
+                <div className="flex items-center gap-1.5 text-sm">
+                  <span className="text-muted-foreground">Dupla detectada:</span>
+                  <span className="font-semibold text-primary">{matchedDuo.name}</span>
+                </div>
+              </div>
+            )}
 
             <FormField
               control={form.control}
