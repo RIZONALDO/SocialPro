@@ -57,10 +57,20 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen w-full bg-muted/40">
       {/* Sidebar */}
       <aside
-        className={`hidden sm:flex flex-col border-r bg-background transition-all duration-200 ease-in-out ${
+        className={`hidden sm:flex flex-col border-r bg-background transition-all duration-200 ease-in-out relative ${
           collapsed ? "w-[56px]" : "w-64"
         }`}
       >
+        {/* Collapse toggle — centered vertically on the right edge */}
+        <button
+          onClick={() => setCollapsed((c) => !c)}
+          title={collapsed ? "Expandir menu" : "Recolher menu"}
+          className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 flex h-6 w-6 items-center justify-center rounded-full border bg-background shadow-md text-muted-foreground hover:text-primary transition-colors"
+        >
+          {collapsed
+            ? <PanelLeftOpen className="h-3 w-3" />
+            : <PanelLeftClose className="h-3 w-3" />}
+        </button>
         {/* Logo row */}
         <div className="flex h-14 items-center border-b px-3 lg:h-[60px] gap-2 overflow-hidden">
           <Link href={user?.role === "admin" ? "/" : "/corrida-bonus"} className="flex items-center gap-2 font-semibold min-w-0 flex-1 overflow-hidden">
@@ -113,7 +123,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </p>
             </div>
           )}
-          <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "justify-between"} items-center`}>
+          <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "justify-start gap-1"} items-center`}>
             {collapsed ? (
               <>
                 <Tooltip>
@@ -130,33 +140,13 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                   </TooltipTrigger>
                   <TooltipContent side="right">Trocar senha</TooltipContent>
                 </Tooltip>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCollapsed((c) => !c)}
-                  title="Expandir menu"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  <PanelLeftOpen className="h-4 w-4" />
-                </Button>
               </>
             ) : (
               <>
-                <div className="flex items-center gap-1">
-                  <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
-                    <LogOut className="h-4 w-4" />
-                  </Button>
-                  <ChangePasswordDialog />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setCollapsed((c) => !c)}
-                  title="Recolher menu"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  <PanelLeftClose className="h-4 w-4" />
+                <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
+                  <LogOut className="h-4 w-4" />
                 </Button>
+                <ChangePasswordDialog />
               </>
             )}
           </div>
