@@ -16,6 +16,16 @@ import { fetchVideos, fetchVideoById } from "../lib/videos";
 
 const router: IRouter = Router();
 
+function toDateString(value: unknown): string {
+  if (value instanceof Date) {
+    const y = value.getUTCFullYear();
+    const m = String(value.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(value.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  return String(value);
+}
+
 router.get("/videos", async (req, res): Promise<void> => {
   const q = ListVideosQueryParams.safeParse(req.query);
   if (!q.success) {
@@ -40,7 +50,7 @@ router.post("/videos", async (req, res): Promise<void> => {
     .insert(videosTable)
     .values({
       title: d.title,
-      deliveryDate: String(d.deliveryDate),
+      deliveryDate: toDateString(d.deliveryDate),
       status: d.status,
       client: d.client ?? null,
       platform: d.platform ?? null,
@@ -83,7 +93,7 @@ router.patch("/videos/:id", async (req, res): Promise<void> => {
   const d = parsed.data;
   const update: Record<string, unknown> = {};
   if (d.title !== undefined) update.title = d.title;
-  if (d.deliveryDate !== undefined) update.deliveryDate = String(d.deliveryDate);
+  if (d.deliveryDate !== undefined) update.deliveryDate = toDateString(d.deliveryDate);
   if (d.status !== undefined) update.status = d.status;
   if (d.client !== undefined) update.client = d.client;
   if (d.platform !== undefined) update.platform = d.platform;
