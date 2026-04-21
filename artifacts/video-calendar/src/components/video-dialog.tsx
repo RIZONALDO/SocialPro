@@ -187,6 +187,10 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
 
   const isPending = createVideo.isPending || updateVideo.isPending;
 
+  const editors = teamMembers?.filter((m) => m.role === "editor") ?? [];
+  const captadores = teamMembers?.filter((m) => m.role === "captador") ?? [];
+  const roteiristas = teamMembers?.filter((m) => m.role === "roteirista") ?? [];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -323,7 +327,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">Nenhum</SelectItem>
-                        {teamMembers?.map((member) => (
+                        {editors.map((member) => (
                           <SelectItem key={member.id} value={member.id.toString()}>
                             {member.name}
                           </SelectItem>
@@ -351,7 +355,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">Nenhum</SelectItem>
-                        {teamMembers?.map((member) => (
+                        {captadores.map((member) => (
                           <SelectItem key={member.id} value={member.id.toString()}>
                             {member.name}
                           </SelectItem>
@@ -379,7 +383,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="none">Nenhum</SelectItem>
-                        {teamMembers?.map((member) => (
+                        {roteiristas.map((member) => (
                           <SelectItem key={member.id} value={member.id.toString()}>
                             {member.name}
                           </SelectItem>

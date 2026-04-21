@@ -45,12 +45,42 @@ function DuoForm({
   onChange,
   captadores,
   editores,
+  duos,
+  currentDuoId,
 }: {
   fields: DuoFormFields;
   onChange: (f: Partial<DuoFormFields>) => void;
   captadores: { id: number; name: string }[];
   editores: { id: number; name: string }[];
+  duos: Duo[];
+  currentDuoId?: number;
 }) {
+  const otherDuos = duos.filter((d) => d.id !== currentDuoId);
+
+  const handleCaptadorChange = (val: string) => {
+    const captId = val === NONE ? "" : val;
+    const update: Partial<DuoFormFields> = { captadorId: captId };
+    if (captId) {
+      const match = otherDuos.find(
+        (d) => d.captadorId?.toString() === captId && d.editorId
+      );
+      if (match) update.editorId = match.editorId!.toString();
+    }
+    onChange(update);
+  };
+
+  const handleEditorChange = (val: string) => {
+    const edId = val === NONE ? "" : val;
+    const update: Partial<DuoFormFields> = { editorId: edId };
+    if (edId) {
+      const match = otherDuos.find(
+        (d) => d.editorId?.toString() === edId && d.captadorId
+      );
+      if (match) update.captadorId = match.captadorId!.toString();
+    }
+    onChange(update);
+  };
+
   return (
     <div className="space-y-4">
       <div>
@@ -66,7 +96,7 @@ function DuoForm({
           <Label>Captador</Label>
           <Select
             value={fields.captadorId || NONE}
-            onValueChange={(v) => onChange({ captadorId: v === NONE ? "" : v })}
+            onValueChange={handleCaptadorChange}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione" />
@@ -85,7 +115,7 @@ function DuoForm({
           <Label>Editor</Label>
           <Select
             value={fields.editorId || NONE}
-            onValueChange={(v) => onChange({ editorId: v === NONE ? "" : v })}
+            onValueChange={handleEditorChange}
           >
             <SelectTrigger>
               <SelectValue placeholder="Selecione" />
@@ -120,10 +150,12 @@ function EditDuoDialog({
   duo,
   captadores,
   editores,
+  duos,
 }: {
   duo: Duo;
   captadores: { id: number; name: string }[];
   editores: { id: number; name: string }[];
+  duos: Duo[];
 }) {
   const [open, setOpen] = useState(false);
   const [fields, setFields] = useState<DuoFormFields>({
@@ -190,6 +222,8 @@ function EditDuoDialog({
           onChange={(f) => setFields((prev) => ({ ...prev, ...f }))}
           captadores={captadores}
           editores={editores}
+          duos={duos}
+          currentDuoId={duo.id}
         />
         <div className="flex justify-end pt-2">
           <Button onClick={save} disabled={updateDuo.isPending}>
@@ -292,6 +326,7 @@ export function DuosSection() {
               onChange={(f) => setFields((prev) => ({ ...prev, ...f }))}
               captadores={captadores}
               editores={editores}
+              duos={duos}
             />
             <div className="flex justify-end pt-2">
               <Button onClick={submit} disabled={createDuo.isPending}>
@@ -318,6 +353,7 @@ export function DuosSection() {
                       duo={d}
                       captadores={captadores}
                       editores={editores}
+                      duos={duos}
                     />
                     <Button
                       variant="ghost"
