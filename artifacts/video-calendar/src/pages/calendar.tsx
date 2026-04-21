@@ -6,12 +6,15 @@ import { useListVideos, getListVideosQueryKey, Video } from "@workspace/api-clie
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { VideoDialog } from "@/components/video-dialog";
+import { DayDetailsDialog } from "@/components/day-details-dialog";
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
+  const [dayDetailsOpen, setDayDetailsOpen] = useState(false);
+  const [dayDetailsDate, setDayDetailsDate] = useState<Date | null>(null);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -27,9 +30,8 @@ export default function CalendarPage() {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   const handleDayClick = (day: Date) => {
-    setSelectedDate(day);
-    setSelectedVideo(null);
-    setIsDialogOpen(true);
+    setDayDetailsDate(day);
+    setDayDetailsOpen(true);
   };
 
   const handleVideoClick = (e: React.MouseEvent, video: Video) => {
@@ -38,6 +40,24 @@ export default function CalendarPage() {
     setSelectedVideo(video);
     setIsDialogOpen(true);
   };
+
+  const handleAddOnDay = () => {
+    setSelectedDate(dayDetailsDate);
+    setSelectedVideo(null);
+    setDayDetailsOpen(false);
+    setIsDialogOpen(true);
+  };
+
+  const handleEditFromDay = (video: Video) => {
+    setSelectedDate(parseISO(video.deliveryDate));
+    setSelectedVideo(video);
+    setDayDetailsOpen(false);
+    setIsDialogOpen(true);
+  };
+
+  const dayVideosForDetails = dayDetailsDate
+    ? videos.filter(v => isSameDay(parseISO(v.deliveryDate), dayDetailsDate))
+    : [];
 
   const openNewVideoDialog = () => {
     setSelectedDate(new Date());
@@ -122,6 +142,15 @@ export default function CalendarPage() {
           <div key={`empty-end-${index}`} className="bg-background min-h-[120px] p-2 opacity-50" />
         ))}
       </div>
+
+      <DayDetailsDialog
+        open={dayDetailsOpen}
+        onOpenChange={setDayDetailsOpen}
+        date={dayDetailsDate}
+        videos={dayVideosForDetails}
+        onAdd={handleAddOnDay}
+        onEdit={handleEditFromDay}
+      />
 
       <VideoDialog
         open={isDialogOpen}
