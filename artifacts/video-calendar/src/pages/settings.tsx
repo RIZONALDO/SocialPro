@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Camera, Loader2 } from "lucide-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
+import { UserManagement } from "@/components/user-management";
 
 function LogoUpload({ currentLogoUrl, onUploaded }: { currentLogoUrl?: string | null; onUploaded: (path: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -166,6 +167,18 @@ export default function Settings() {
           {updateSettings.isPending ? "Salvando..." : "Salvar configurações"}
         </Button>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Usuários</CardTitle>
+          <CardDescription>
+            Gerencie quem tem acesso ao sistema. Membros da equipe só visualizam a Corrida do Bônus.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <UserManagement />
+        </CardContent>
+      </Card>
     </div>
   );
 }

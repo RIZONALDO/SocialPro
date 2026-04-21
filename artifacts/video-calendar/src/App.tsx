@@ -1,9 +1,11 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarLayout } from "@/components/layout";
 import { ThemeProvider } from "@/lib/theme";
+import { AuthProvider, useAuth } from "@/lib/auth";
+import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
 import VideoList from "@/pages/video-list";
@@ -21,7 +23,40 @@ const queryClient = new QueryClient({
   },
 });
 
+const MEMBER_ONLY_PATH = "/corrida-bonus";
+
 function Router() {
+  const { user, loading } = useAuth();
+  const [location, navigate] = useLocation();
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-muted/40">
+        <span className="text-muted-foreground text-sm">Carregando...</span>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage onSuccess={() => navigate("/")} />;
+  }
+
+  // Members (non-admin) can only access the corrida-bonus page
+  if (user.role !== "admin" && location !== MEMBER_ONLY_PATH) {
+    return <Redirect to={MEMBER_ONLY_PATH} />;
+  }
+
+  // Members: only corrida-bonus is accessible (redirect handled above)
+  if (user.role !== "admin") {
+    return (
+      <SidebarLayout>
+        <Switch>
+          <Route path={MEMBER_ONLY_PATH} component={CorridaBonus} />
+        </Switch>
+      </SidebarLayout>
+    );
+  }
+
   return (
     <SidebarLayout>
       <Switch>
@@ -41,14 +76,16 @@ function Router() {
 function App() {
   return (
     <ThemeProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-            <Router />
-          </WouterRouter>
-          <Toaster />
-        </TooltipProvider>
-      </QueryClientProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
+              <Router />
+            </WouterRouter>
+            <Toaster />
+          </TooltipProvider>
+        </QueryClientProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

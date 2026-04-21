@@ -2,22 +2,23 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   CalendarDays, LayoutDashboard, Video, Users, FileBarChart,
-  Settings, Crown, Sun, Moon, PanelLeftClose, PanelLeftOpen,
+  Settings, Crown, Sun, Moon, PanelLeftClose, PanelLeftOpen, LogOut,
 } from "lucide-react";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 import { useTheme } from "@/lib/theme";
+import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/calendar", label: "Calendário", icon: CalendarDays },
-  { href: "/videos", label: "Vídeos", icon: Video },
-  { href: "/team", label: "Equipe", icon: Users },
-  { href: "/report", label: "Relatório", icon: FileBarChart },
-  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown },
-  { href: "/settings", label: "Configurações", icon: Settings },
+const ALL_NAV_ITEMS = [
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, adminOnly: true },
+  { href: "/calendar", label: "Calendário", icon: CalendarDays, adminOnly: true },
+  { href: "/videos", label: "Vídeos", icon: Video, adminOnly: true },
+  { href: "/team", label: "Equipe", icon: Users, adminOnly: true },
+  { href: "/report", label: "Relatório", icon: FileBarChart, adminOnly: true },
+  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown, adminOnly: false },
+  { href: "/settings", label: "Configurações", icon: Settings, adminOnly: true },
 ];
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -26,6 +27,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const appName = settings?.appName ?? "Minha Produtora";
   const logoUrl = settings?.logoUrl ?? null;
   const { theme, toggle: toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem("sidebar-collapsed");
@@ -37,6 +39,10 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   }, [collapsed]);
 
   const logoSrc = photoStorageUrl(logoUrl);
+
+  const navItems = ALL_NAV_ITEMS.filter(item =>
+    !item.adminOnly || user?.role === "admin"
+  );
 
   const LogoIcon = () =>
     logoSrc ? (
@@ -55,7 +61,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       >
         {/* Logo row */}
         <div className="flex h-14 items-center border-b px-3 lg:h-[60px] gap-2 overflow-hidden">
-          <Link href="/" className="flex items-center gap-2 font-semibold min-w-0 flex-1 overflow-hidden">
+          <Link href={user?.role === "admin" ? "/" : "/corrida-bonus"} className="flex items-center gap-2 font-semibold min-w-0 flex-1 overflow-hidden">
             <LogoIcon />
             {!collapsed && (
               <span className="truncate text-sm">{appName}</span>
@@ -66,7 +72,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Nav items */}
         <nav className="flex-1 overflow-auto py-3">
           <ul className="grid gap-1 px-2">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = location === item.href;
               const linkClass = `flex items-center gap-3 rounded-lg px-2 py-2 text-sm transition-all hover:text-primary ${
                 isActive ? "bg-muted text-primary" : "text-muted-foreground"
@@ -95,17 +101,39 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </ul>
         </nav>
 
-        {/* Collapse toggle at the bottom */}
-        <div className="border-t px-2 py-2 flex justify-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCollapsed((c) => !c)}
-            title={collapsed ? "Expandir menu" : "Recolher menu"}
-            className="text-muted-foreground hover:text-primary"
-          >
-            {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          </Button>
+        {/* Bottom: user info + collapse toggle */}
+        <div className="border-t px-2 py-2 space-y-1">
+          {!collapsed && user && (
+            <div className="px-2 py-1">
+              <p className="text-xs font-medium truncate">{user.name ?? user.email}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user.role === "admin" ? "Administrador" : "Membro"}</p>
+            </div>
+          )}
+          <div className={`flex ${collapsed ? "justify-center" : "justify-between"} items-center`}>
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive">
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sair</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
+                <LogOut className="h-4 w-4" />
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setCollapsed((c) => !c)}
+              title={collapsed ? "Expandir menu" : "Recolher menu"}
+              className="text-muted-foreground hover:text-primary"
+            >
+              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </aside>
 
@@ -120,7 +148,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             </Link>
           </div>
 
-          <div className="ml-auto">
+          <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon"
