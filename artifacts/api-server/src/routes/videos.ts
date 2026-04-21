@@ -27,15 +27,9 @@ function toDateString(value: unknown): string {
 }
 
 router.get("/videos", async (req, res): Promise<void> => {
-  const q = ListVideosQueryParams.safeParse(req.query);
-  if (!q.success) {
-    res.status(400).json({ error: q.error.message });
-    return;
-  }
-  const videos = await fetchVideos({
-    from: q.data.from ? String(q.data.from) : undefined,
-    to: q.data.to ? String(q.data.to) : undefined,
-  });
+  const from = typeof req.query.from === "string" && req.query.from ? req.query.from : undefined;
+  const to = typeof req.query.to === "string" && req.query.to ? req.query.to : undefined;
+  const videos = await fetchVideos({ from, to });
   res.json(ListVideosResponse.parse(videos));
 });
 
