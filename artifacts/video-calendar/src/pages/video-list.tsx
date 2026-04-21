@@ -2,7 +2,7 @@ import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Plus, Search, Edit2, Trash2, Copy } from "lucide-react";
-import { useListVideos, getListVideosQueryKey, useDeleteVideo, VideoStatus, Video } from "@workspace/api-client-react";
+import { useListVideos, getListVideosQueryKey, useDeleteVideo, useUpdateVideo, getGetDashboardSummaryQueryKey, getGetWeeklyReportQueryKey, VideoStatus, Video } from "@workspace/api-client-react";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/constants";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -52,6 +52,22 @@ export default function VideoList() {
   });
   
   const deleteVideo = useDeleteVideo();
+  const updateVideo = useUpdateVideo();
+
+  const handleStatusChange = (video: Video, newStatus: VideoStatus) => {
+    if (newStatus === video.status) return;
+    updateVideo.mutate(
+      { id: video.id, data: { status: newStatus } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListVideosQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetWeeklyReportQueryKey() });
+          toast({ title: "Status atualizado" });
+        },
+      }
+    );
+  };
 
   const filteredVideos = videos.filter(v => {
     const matchesSearch = (v.title?.toLowerCase().includes(searchTerm.toLowerCase())) || 
@@ -154,9 +170,16 @@ export default function VideoList() {
                   <TableCell className="font-medium">{video.title}</TableCell>
                   <TableCell>{format(parseISO(video.deliveryDate), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                   <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[video.status]}`}>
-                      {STATUS_LABELS[video.status]}
-                    </span>
+                    <Select value={video.status} onValueChange={(v) => handleStatusChange(video, v as VideoStatus)}>
+                      <SelectTrigger className={`h-7 w-[140px] border px-2.5 py-0.5 text-xs font-semibold ${STATUS_COLORS[video.status]}`}>
+                        <SelectValue>{STATUS_LABELS[video.status]}</SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(STATUS_LABELS).map(([val, label]) => (
+                          <SelectItem key={val} value={val}>{label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>{video.client || "-"}</TableCell>
                   <TableCell>{video.platform || "-"}</TableCell>
