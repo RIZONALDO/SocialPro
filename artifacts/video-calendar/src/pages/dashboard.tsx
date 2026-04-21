@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Film, CheckCheck, CalendarCheck, Clock } from "lucide-react";
 
 export default function Dashboard() {
   const { data: summary, isLoading, error } = useGetDashboardSummary();
@@ -54,36 +55,59 @@ export default function Dashboard() {
       <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        {/* Total de Vídeos — azul */}
+        <Card className="border-t-4 border-t-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total de Vídeos</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Vídeos</CardTitle>
+            <div className="rounded-full bg-blue-100 p-2">
+              <Film className="h-4 w-4 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.totalVideos}</div>
+            <div className="text-3xl font-bold text-blue-600">{summary.totalVideos}</div>
+            <p className="text-xs text-muted-foreground mt-1">todos os registros</p>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Entregues nesta Semana — verde */}
+        <Card className="border-t-4 border-t-emerald-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entregues nesta Semana</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Entregues nesta Semana</CardTitle>
+            <div className="rounded-full bg-emerald-100 p-2">
+              <CheckCheck className="h-4 w-4 text-emerald-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.deliveredThisWeek}</div>
+            <div className="text-3xl font-bold text-emerald-600">{summary.deliveredThisWeek}</div>
+            <p className="text-xs text-muted-foreground mt-1">semana atual</p>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Entregues neste Mês — roxo */}
+        <Card className="border-t-4 border-t-violet-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entregues neste Mês</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Entregues neste Mês</CardTitle>
+            <div className="rounded-full bg-violet-100 p-2">
+              <CalendarCheck className="h-4 w-4 text-violet-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.deliveredThisMonth}</div>
+            <div className="text-3xl font-bold text-violet-600">{summary.deliveredThisMonth}</div>
+            <p className="text-xs text-muted-foreground mt-1">mês atual</p>
           </CardContent>
         </Card>
-        <Card>
+
+        {/* Próximos — laranja */}
+        <Card className="border-t-4 border-t-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Próximos</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Próximos</CardTitle>
+            <div className="rounded-full bg-orange-100 p-2">
+              <Clock className="h-4 w-4 text-orange-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summary.upcomingCount}</div>
+            <div className="text-3xl font-bold text-orange-600">{summary.upcomingCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">aguardando entrega</p>
           </CardContent>
         </Card>
       </div>
