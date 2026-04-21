@@ -1,6 +1,5 @@
 import { Router, type IRouter } from "express";
 import {
-  GetWeeklyReportQueryParams,
   GetWeeklyReportResponse,
   GetDashboardSummaryResponse,
 } from "@workspace/api-zod";
@@ -54,12 +53,8 @@ function groupByStatus(videos: VideoWithPeople[]) {
 }
 
 router.get("/reports/weekly", async (req, res): Promise<void> => {
-  const q = GetWeeklyReportQueryParams.safeParse(req.query);
-  if (!q.success) {
-    res.status(400).json({ error: q.error.message });
-    return;
-  }
-  const ref = q.data.weekOf ? new Date(String(q.data.weekOf)) : new Date();
+  const weekOfRaw = typeof req.query["weekOf"] === "string" ? req.query["weekOf"] : undefined;
+  const ref = weekOfRaw ? new Date(weekOfRaw) : new Date();
   const start = startOfWeekMonday(ref);
   const end = addDays(start, 6);
   const weekStart = toISODate(start);
