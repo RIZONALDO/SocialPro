@@ -8,6 +8,7 @@ import CalendarPage from "@/pages/calendar";
 import VideoList from "@/pages/video-list";
 import Team from "@/pages/team";
 import Report from "@/pages/report";
+import CorridaBonus from "@/pages/corrida-bonus";
 import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/videos" component={VideoList} />
         <Route path="/team" component={Team} />
         <Route path="/report" component={Report} />
+        <Route path="/corrida-bonus" component={CorridaBonus} />
         <Route path="/settings" component={SettingsPage} />
         <Route component={NotFound} />
       </Switch>

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { CalendarDays, LayoutDashboard, Video, Users, FileBarChart, Settings } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Video, Users, FileBarChart, Settings, Crown } from "lucide-react";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 
@@ -15,6 +15,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     { href: "/videos", label: "Vídeos", icon: Video },
     { href: "/team", label: "Equipe", icon: Users },
     { href: "/report", label: "Relatório", icon: FileBarChart },
+    { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown },
     { href: "/settings", label: "Configurações", icon: Settings },
   ];
 

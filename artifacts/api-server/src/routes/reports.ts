@@ -169,4 +169,70 @@ router.get("/reports/summary", async (_req, res): Promise<void> => {
   res.json(GetDashboardSummaryResponse.parse(summary));
 });
 
+router.get("/reports/monthly", async (req, res): Promise<void> => {
+  const monthOfRaw = typeof req.query["monthOf"] === "string" ? req.query["monthOf"] : undefined;
+  const ref = monthOfRaw ? new Date(monthOfRaw) : new Date();
+  const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
+  end.setHours(0, 0, 0, 0);
+  const monthStart = toISODate(start);
+  const monthEnd = toISODate(end);
+  const daysInMonth = end.getDate();
+
+  const videos = await fetchVideos({ from: monthStart, to: monthEnd });
+  const duos = await fetchDuos();
+
+  const byDay = Array.from({ length: daysInMonth }, (_, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    const date = toISODate(d);
+    const count = videos.filter((v) => String(v.deliveryDate) === date).length;
+    return { date, count };
+  });
+
+  const deliveredVideos = videos.filter(
+    (v) => v.status === "entregue" || v.status === "publicado",
+  );
+
+  const byDuo = duos.map((d) => {
+    const matches = deliveredVideos.filter(
+      (v) =>
+        (d.captadorId == null || v.captadorId === d.captadorId) &&
+        (d.editorId == null || v.editorId === d.editorId) &&
+        (d.captadorId != null || d.editorId != null),
+    );
+    const days = Array.from({ length: daysInMonth }, (_, i) => {
+      const day = new Date(start);
+      day.setDate(day.getDate() + i);
+      const date = toISODate(day);
+      const count = matches.filter((v) => String(v.deliveryDate) === date).length;
+      return { date, count, goalMet: count >= d.dailyGoal };
+    });
+    const monthGoal = d.dailyGoal * daysInMonth;
+    return {
+      duo: d,
+      delivered: matches.length,
+      weekGoal: monthGoal,
+      goalMet: matches.length >= monthGoal,
+      byDay: days,
+    };
+  });
+
+  const report = {
+    weekStart: monthStart,
+    weekEnd: monthEnd,
+    totalVideos: videos.length,
+    byStatus: groupByStatus(videos),
+    byEditor: groupContributions(videos, (v) => v.editor),
+    byCaptador: groupContributions(videos, (v) => v.captador),
+    byRoteirista: groupContributions(videos, (v) => v.roteirista),
+    byDay,
+    byDuo,
+    videos,
+  };
+
+  res.json(GetWeeklyReportResponse.parse(report));
+});
+
 export default router;
