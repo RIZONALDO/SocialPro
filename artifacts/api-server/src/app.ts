@@ -42,7 +42,7 @@ if (!sessionSecret) {
 
 app.use(
   session({
-    store: new PgStore({ pool, createTableIfMissing: true }),
+    store: new PgStore({ pool }),
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
