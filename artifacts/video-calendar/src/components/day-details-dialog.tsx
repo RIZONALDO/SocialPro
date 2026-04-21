@@ -1,6 +1,6 @@
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Edit2, Clock, User } from "lucide-react";
+import { Video as VideoIcon, Edit2, Clock, User } from "lucide-react";
 import { Video } from "@workspace/api-client-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -40,8 +40,8 @@ export function DayDetailsDialog({ open, onOpenChange, date, videos, onAdd, onEd
               </DialogDescription>
             </div>
             <Button size="sm" onClick={onAdd}>
-              <Plus className="h-4 w-4 mr-1" />
-              Adicionar
+              <VideoIcon className="h-4 w-4 mr-1" />
+              Adicionar vídeo
             </Button>
           </div>
         </DialogHeader>
