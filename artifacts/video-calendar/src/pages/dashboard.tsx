@@ -178,7 +178,7 @@ export default function Dashboard() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Top Contribuidores</CardTitle>
+              <CardTitle>Top Criadores</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
