@@ -178,7 +178,41 @@ router.post("/users/:id/reset-password", async (req, res) => {
   return res.json({ ok: true });
 });
 
-// DELETE /api/users/:id — remove a user (admin only, cannot delete self)
+// PUT /api/users/:id — update role and/or teamMemberId (admin only)
+router.put("/users/:id", async (req, res) => {
+  const session = req.session as { userId?: number };
+  if (!session.userId) return res.status(401).json({ error: "Não autenticado" });
+  const [caller] = await db.select().from(usersTable).where(eq(usersTable.id, session.userId));
+  if (!caller || caller.role !== "admin") return res.status(403).json({ error: "Sem permissão" });
+
+  const targetId = Number(req.params.id);
+  const { role, teamMemberId } = req.body as { role?: string; teamMemberId?: number | null };
+
+  // Prevent removing admin role from self if we would be the last admin
+  if (role && role !== "admin" && targetId === session.userId) {
+    const admins = await db.select().from(usersTable).where(eq(usersTable.role, "admin"));
+    if (admins.length <= 1) {
+      return res.status(400).json({ error: "Não é possível remover o papel de administrador do único admin do sistema" });
+    }
+  }
+
+  const updates: Record<string, unknown> = {};
+  if (role !== undefined) {
+    updates.role = role === "admin" ? "admin" : role === "operator" ? "operator" : "member";
+  }
+  if (teamMemberId !== undefined) {
+    updates.teamMemberId = teamMemberId ?? null;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "Nada para atualizar" });
+  }
+
+  await db.update(usersTable).set(updates).where(eq(usersTable.id, targetId));
+  return res.json({ ok: true });
+});
+
+// DELETE /api/users/:id — remove a user (admin only, cannot delete self, cannot delete last admin)
 router.delete("/users/:id", async (req, res) => {
   const session = req.session as { userId?: number };
   if (!session.userId) return res.status(401).json({ error: "Não autenticado" });
@@ -187,6 +221,14 @@ router.delete("/users/:id", async (req, res) => {
 
   const targetId = Number(req.params.id);
   if (targetId === session.userId) return res.status(400).json({ error: "Não é possível remover sua própria conta" });
+
+  const [target] = await db.select().from(usersTable).where(eq(usersTable.id, targetId));
+  if (target?.role === "admin") {
+    const admins = await db.select().from(usersTable).where(eq(usersTable.role, "admin"));
+    if (admins.length <= 1) {
+      return res.status(400).json({ error: "Não é possível remover o único administrador do sistema" });
+    }
+  }
 
   await db.delete(usersTable).where(eq(usersTable.id, targetId));
   return res.json({ ok: true });
