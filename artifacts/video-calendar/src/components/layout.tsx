@@ -46,11 +46,15 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     user?.role ? item.roles.includes(user.role) : false
   );
 
-  const LogoIcon = () =>
+  const LogoIcon = ({ size = "sm" }: { size?: "sm" | "lg" }) =>
     logoSrc ? (
-      <img src={logoSrc} alt="Logo" className="h-6 w-6 object-contain rounded flex-shrink-0" />
+      <img
+        src={logoSrc}
+        alt="Logo"
+        className={size === "lg" ? "h-10 w-10 object-contain rounded-lg flex-shrink-0" : "h-6 w-6 object-contain rounded flex-shrink-0"}
+      />
     ) : (
-      <Video className="h-6 w-6 flex-shrink-0" />
+      <Video className={size === "lg" ? "h-10 w-10 flex-shrink-0" : "h-6 w-6 flex-shrink-0"} />
     );
 
   return (
@@ -62,11 +66,14 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         }`}
       >
         {/* Logo row */}
-        <div className="flex h-14 items-center border-b px-3 lg:h-[60px] gap-2 overflow-hidden">
-          <Link href={user?.role === "admin" ? "/" : "/corrida-bonus"} className="flex items-center gap-2 font-semibold min-w-0 flex-1 overflow-hidden">
-            <LogoIcon />
+        <div className={`flex items-center border-b overflow-hidden transition-all duration-200 ${collapsed ? "h-16 px-2 justify-center" : "h-20 px-4 gap-3"}`}>
+          <Link
+            href={user?.role === "admin" ? "/" : "/corrida-bonus"}
+            className={`flex min-w-0 flex-1 overflow-hidden ${collapsed ? "justify-center" : "items-center gap-3"}`}
+          >
+            <LogoIcon size={collapsed ? "sm" : "lg"} />
             {!collapsed && (
-              <span className="truncate text-sm">{appName}</span>
+              <span className="truncate text-base font-bold leading-tight">{appName}</span>
             )}
           </Link>
         </div>
@@ -101,14 +108,14 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
               );
             })}
 
-            {/* Toggle button — below last nav item */}
-            <li className="mt-2">
+            {/* Divider + Toggle button */}
+            <li className="mt-3 pt-3 border-t border-border">
               {collapsed ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => setCollapsed(false)}
-                      className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                      className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm transition-all text-muted-foreground hover:bg-muted hover:text-foreground"
                     >
                       <PanelLeftOpen className="h-4 w-4 flex-shrink-0" />
                     </button>
@@ -118,7 +125,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
               ) : (
                 <button
                   onClick={() => setCollapsed(true)}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-all text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
                   <PanelLeftClose className="h-4 w-4 flex-shrink-0" />
                   <span className="truncate">Recolher menu</span>
@@ -174,7 +181,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           {/* Mobile logo */}
           <div className="flex h-14 items-center sm:hidden">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <LogoIcon />
+              <LogoIcon size="sm" />
               <span className="truncate">{appName}</span>
             </Link>
           </div>
