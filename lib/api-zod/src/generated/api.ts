@@ -8,9 +8,435 @@
 import * as zod from "zod";
 
 /**
- * Returns server health status
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
+});
+
+/**
+ * @summary List videos with optional date range filter
+ */
+export const ListVideosQueryParams = zod.object({
+  from: zod.date().optional(),
+  to: zod.date().optional(),
+});
+
+export const ListVideosResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  deliveryDate: zod.coerce.date(),
+  status: zod.enum([
+    "planejado",
+    "em_producao",
+    "em_edicao",
+    "entregue",
+    "publicado",
+  ]),
+  client: zod.string().nullish(),
+  platform: zod.string().nullish().describe("e.g. Instagram, YouTube, TikTok"),
+  durationSeconds: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  editorId: zod.number().nullish(),
+  captadorId: zod.number().nullish(),
+  roteiristaId: zod.number().nullish(),
+  editor: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  captador: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  roteirista: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListVideosResponse = zod.array(ListVideosResponseItem);
+
+/**
+ * @summary Create a new video deliverable
+ */
+
+export const CreateVideoBody = zod.object({
+  title: zod.string().min(1),
+  deliveryDate: zod.coerce.date(),
+  status: zod.enum([
+    "planejado",
+    "em_producao",
+    "em_edicao",
+    "entregue",
+    "publicado",
+  ]),
+  client: zod.string().nullish(),
+  platform: zod.string().nullish(),
+  durationSeconds: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  editorId: zod.number().nullish(),
+  captadorId: zod.number().nullish(),
+  roteiristaId: zod.number().nullish(),
+});
+
+export const GetVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetVideoResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  deliveryDate: zod.coerce.date(),
+  status: zod.enum([
+    "planejado",
+    "em_producao",
+    "em_edicao",
+    "entregue",
+    "publicado",
+  ]),
+  client: zod.string().nullish(),
+  platform: zod.string().nullish().describe("e.g. Instagram, YouTube, TikTok"),
+  durationSeconds: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  editorId: zod.number().nullish(),
+  captadorId: zod.number().nullish(),
+  roteiristaId: zod.number().nullish(),
+  editor: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  captador: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  roteirista: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+export const UpdateVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateVideoBody = zod.object({
+  title: zod.string().optional(),
+  deliveryDate: zod.coerce.date().optional(),
+  status: zod
+    .enum(["planejado", "em_producao", "em_edicao", "entregue", "publicado"])
+    .optional(),
+  client: zod.string().nullish(),
+  platform: zod.string().nullish(),
+  durationSeconds: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  editorId: zod.number().nullish(),
+  captadorId: zod.number().nullish(),
+  roteiristaId: zod.number().nullish(),
+});
+
+export const UpdateVideoResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  deliveryDate: zod.coerce.date(),
+  status: zod.enum([
+    "planejado",
+    "em_producao",
+    "em_edicao",
+    "entregue",
+    "publicado",
+  ]),
+  client: zod.string().nullish(),
+  platform: zod.string().nullish().describe("e.g. Instagram, YouTube, TikTok"),
+  durationSeconds: zod.number().nullish(),
+  notes: zod.string().nullish(),
+  editorId: zod.number().nullish(),
+  captadorId: zod.number().nullish(),
+  roteiristaId: zod.number().nullish(),
+  editor: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  captador: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  roteirista: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  createdAt: zod.coerce.date(),
+});
+
+export const DeleteVideoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const ListTeamMembersResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+  color: zod.string().describe("Hex color used in UI"),
+  createdAt: zod.coerce.date(),
+});
+export const ListTeamMembersResponse = zod.array(ListTeamMembersResponseItem);
+
+export const CreateTeamMemberBody = zod.object({
+  name: zod.string().min(1),
+  role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+  color: zod.string().optional(),
+});
+
+export const DeleteTeamMemberParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+/**
+ * @summary Weekly report (Mon-Sun) for a given reference date
+ */
+export const GetWeeklyReportQueryParams = zod.object({
+  weekOf: zod.date().optional().describe("Any ISO date inside the target week"),
+});
+
+export const GetWeeklyReportResponse = zod.object({
+  weekStart: zod.coerce.date(),
+  weekEnd: zod.coerce.date(),
+  totalVideos: zod.number(),
+  byStatus: zod.array(
+    zod.object({
+      status: zod.enum([
+        "planejado",
+        "em_producao",
+        "em_edicao",
+        "entregue",
+        "publicado",
+      ]),
+      count: zod.number(),
+    }),
+  ),
+  byEditor: zod.array(
+    zod.object({
+      member: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+        color: zod.string().describe("Hex color used in UI"),
+        createdAt: zod.coerce.date(),
+      }),
+      count: zod.number(),
+    }),
+  ),
+  byCaptador: zod.array(
+    zod.object({
+      member: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+        color: zod.string().describe("Hex color used in UI"),
+        createdAt: zod.coerce.date(),
+      }),
+      count: zod.number(),
+    }),
+  ),
+  byRoteirista: zod.array(
+    zod.object({
+      member: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+        color: zod.string().describe("Hex color used in UI"),
+        createdAt: zod.coerce.date(),
+      }),
+      count: zod.number(),
+    }),
+  ),
+  byDay: zod.array(
+    zod.object({
+      date: zod.coerce.date(),
+      count: zod.number(),
+    }),
+  ),
+  videos: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      deliveryDate: zod.coerce.date(),
+      status: zod.enum([
+        "planejado",
+        "em_producao",
+        "em_edicao",
+        "entregue",
+        "publicado",
+      ]),
+      client: zod.string().nullish(),
+      platform: zod
+        .string()
+        .nullish()
+        .describe("e.g. Instagram, YouTube, TikTok"),
+      durationSeconds: zod.number().nullish(),
+      notes: zod.string().nullish(),
+      editorId: zod.number().nullish(),
+      captadorId: zod.number().nullish(),
+      roteiristaId: zod.number().nullish(),
+      editor: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      captador: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      roteirista: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Dashboard totals and recent activity
+ */
+export const GetDashboardSummaryResponse = zod.object({
+  totalVideos: zod.number(),
+  deliveredThisWeek: zod.number(),
+  deliveredThisMonth: zod.number(),
+  upcomingCount: zod.number(),
+  byStatus: zod.array(
+    zod.object({
+      status: zod.enum([
+        "planejado",
+        "em_producao",
+        "em_edicao",
+        "entregue",
+        "publicado",
+      ]),
+      count: zod.number(),
+    }),
+  ),
+  recentVideos: zod.array(
+    zod.object({
+      id: zod.number(),
+      title: zod.string(),
+      deliveryDate: zod.coerce.date(),
+      status: zod.enum([
+        "planejado",
+        "em_producao",
+        "em_edicao",
+        "entregue",
+        "publicado",
+      ]),
+      client: zod.string().nullish(),
+      platform: zod
+        .string()
+        .nullish()
+        .describe("e.g. Instagram, YouTube, TikTok"),
+      durationSeconds: zod.number().nullish(),
+      notes: zod.string().nullish(),
+      editorId: zod.number().nullish(),
+      captadorId: zod.number().nullish(),
+      roteiristaId: zod.number().nullish(),
+      editor: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      captador: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      roteirista: zod
+        .object({
+          id: zod.number(),
+          name: zod.string(),
+          role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+          color: zod.string().describe("Hex color used in UI"),
+          createdAt: zod.coerce.date(),
+        })
+        .nullish(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+  topContributors: zod.array(
+    zod.object({
+      member: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+        color: zod.string().describe("Hex color used in UI"),
+        createdAt: zod.coerce.date(),
+      }),
+      count: zod.number(),
+    }),
+  ),
 });

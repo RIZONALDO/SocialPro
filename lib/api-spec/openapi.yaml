@@ -10,13 +10,18 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: videos
+    description: Video deliverables
+  - name: team
+    description: Team members
+  - name: reports
+    description: Weekly and summary reports
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +29,297 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List videos with optional date range filter
+      parameters:
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Video" }
+    post:
+      operationId: createVideo
+      tags: [videos]
+      summary: Create a new video deliverable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateVideoBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Video" }
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Video" }
+    patch:
+      operationId: updateVideo
+      tags: [videos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateVideoBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Video" }
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Deleted
+
+  /team-members:
+    get:
+      operationId: listTeamMembers
+      tags: [team]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/TeamMember" }
+    post:
+      operationId: createTeamMember
+      tags: [team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateTeamMemberBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TeamMember" }
+  /team-members/{id}:
+    delete:
+      operationId: deleteTeamMember
+      tags: [team]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
+  /reports/weekly:
+    get:
+      operationId: getWeeklyReport
+      tags: [reports]
+      summary: Weekly report (Mon-Sun) for a given reference date
+      parameters:
+        - name: weekOf
+          in: query
+          description: Any ISO date inside the target week
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WeeklyReport" }
+
+  /reports/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [reports]
+      summary: Dashboard totals and recent activity
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DashboardSummary" }
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Role:
+      type: string
+      enum: [editor, captador, roteirista, outro]
+
+    TeamMember:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        color: { type: string, description: "Hex color used in UI" }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, role, color, createdAt]
+
+    CreateTeamMemberBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        role: { $ref: "#/components/schemas/Role" }
+        color: { type: string }
+      required: [name, role]
+
+    VideoStatus:
+      type: string
+      enum: [planejado, em_producao, em_edicao, entregue, publicado]
+
+    Video:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        deliveryDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/VideoStatus" }
+        client: { type: string, nullable: true }
+        platform: { type: string, nullable: true, description: "e.g. Instagram, YouTube, TikTok" }
+        durationSeconds: { type: integer, nullable: true }
+        notes: { type: string, nullable: true }
+        editorId: { type: integer, nullable: true }
+        captadorId: { type: integer, nullable: true }
+        roteiristaId: { type: integer, nullable: true }
+        editor: { allOf: [{ $ref: "#/components/schemas/TeamMember" }], nullable: true }
+        captador: { allOf: [{ $ref: "#/components/schemas/TeamMember" }], nullable: true }
+        roteirista: { allOf: [{ $ref: "#/components/schemas/TeamMember" }], nullable: true }
+        createdAt: { type: string, format: date-time }
+      required: [id, title, deliveryDate, status, createdAt]
+
+    CreateVideoBody:
+      type: object
+      properties:
+        title: { type: string, minLength: 1 }
+        deliveryDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/VideoStatus" }
+        client: { type: string, nullable: true }
+        platform: { type: string, nullable: true }
+        durationSeconds: { type: integer, nullable: true }
+        notes: { type: string, nullable: true }
+        editorId: { type: integer, nullable: true }
+        captadorId: { type: integer, nullable: true }
+        roteiristaId: { type: integer, nullable: true }
+      required: [title, deliveryDate, status]
+
+    UpdateVideoBody:
+      type: object
+      properties:
+        title: { type: string }
+        deliveryDate: { type: string, format: date }
+        status: { $ref: "#/components/schemas/VideoStatus" }
+        client: { type: string, nullable: true }
+        platform: { type: string, nullable: true }
+        durationSeconds: { type: integer, nullable: true }
+        notes: { type: string, nullable: true }
+        editorId: { type: integer, nullable: true }
+        captadorId: { type: integer, nullable: true }
+        roteiristaId: { type: integer, nullable: true }
+
+    PersonContribution:
+      type: object
+      properties:
+        member: { $ref: "#/components/schemas/TeamMember" }
+        count: { type: integer }
+      required: [member, count]
+
+    StatusCount:
+      type: object
+      properties:
+        status: { $ref: "#/components/schemas/VideoStatus" }
+        count: { type: integer }
+      required: [status, count]
+
+    WeeklyReport:
+      type: object
+      properties:
+        weekStart: { type: string, format: date }
+        weekEnd: { type: string, format: date }
+        totalVideos: { type: integer }
+        byStatus:
+          type: array
+          items: { $ref: "#/components/schemas/StatusCount" }
+        byEditor:
+          type: array
+          items: { $ref: "#/components/schemas/PersonContribution" }
+        byCaptador:
+          type: array
+          items: { $ref: "#/components/schemas/PersonContribution" }
+        byRoteirista:
+          type: array
+          items: { $ref: "#/components/schemas/PersonContribution" }
+        byDay:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string, format: date }
+              count: { type: integer }
+            required: [date, count]
+        videos:
+          type: array
+          items: { $ref: "#/components/schemas/Video" }
+      required: [weekStart, weekEnd, totalVideos, byStatus, byEditor, byCaptador, byRoteirista, byDay, videos]
+
+    DashboardSummary:
+      type: object
+      properties:
+        totalVideos: { type: integer }
+        deliveredThisWeek: { type: integer }
+        deliveredThisMonth: { type: integer }
+        upcomingCount: { type: integer }
+        byStatus:
+          type: array
+          items: { $ref: "#/components/schemas/StatusCount" }
+        recentVideos:
+          type: array
+          items: { $ref: "#/components/schemas/Video" }
+        topContributors:
+          type: array
+          items: { $ref: "#/components/schemas/PersonContribution" }
+      required: [totalVideos, deliveredThisWeek, deliveredThisMonth, upcomingCount, byStatus, recentVideos, topContributors]

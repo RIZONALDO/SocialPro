@@ -8,3 +8,133 @@
 export interface HealthStatus {
   status: string;
 }
+
+export type Role = (typeof Role)[keyof typeof Role];
+
+export const Role = {
+  editor: "editor",
+  captador: "captador",
+  roteirista: "roteirista",
+  outro: "outro",
+} as const;
+
+export interface TeamMember {
+  id: number;
+  name: string;
+  role: Role;
+  /** Hex color used in UI */
+  color: string;
+  createdAt: string;
+}
+
+export interface CreateTeamMemberBody {
+  /** @minLength 1 */
+  name: string;
+  role: Role;
+  color?: string;
+}
+
+export type VideoStatus = (typeof VideoStatus)[keyof typeof VideoStatus];
+
+export const VideoStatus = {
+  planejado: "planejado",
+  em_producao: "em_producao",
+  em_edicao: "em_edicao",
+  entregue: "entregue",
+  publicado: "publicado",
+} as const;
+
+export interface Video {
+  id: number;
+  title: string;
+  deliveryDate: string;
+  status: VideoStatus;
+  client?: string | null;
+  /** e.g. Instagram, YouTube, TikTok */
+  platform?: string | null;
+  durationSeconds?: number | null;
+  notes?: string | null;
+  editorId?: number | null;
+  captadorId?: number | null;
+  roteiristaId?: number | null;
+  editor?: TeamMember | null;
+  captador?: TeamMember | null;
+  roteirista?: TeamMember | null;
+  createdAt: string;
+}
+
+export interface CreateVideoBody {
+  /** @minLength 1 */
+  title: string;
+  deliveryDate: string;
+  status: VideoStatus;
+  client?: string | null;
+  platform?: string | null;
+  durationSeconds?: number | null;
+  notes?: string | null;
+  editorId?: number | null;
+  captadorId?: number | null;
+  roteiristaId?: number | null;
+}
+
+export interface UpdateVideoBody {
+  title?: string;
+  deliveryDate?: string;
+  status?: VideoStatus;
+  client?: string | null;
+  platform?: string | null;
+  durationSeconds?: number | null;
+  notes?: string | null;
+  editorId?: number | null;
+  captadorId?: number | null;
+  roteiristaId?: number | null;
+}
+
+export interface PersonContribution {
+  member: TeamMember;
+  count: number;
+}
+
+export interface StatusCount {
+  status: VideoStatus;
+  count: number;
+}
+
+export type WeeklyReportByDayItem = {
+  date: string;
+  count: number;
+};
+
+export interface WeeklyReport {
+  weekStart: string;
+  weekEnd: string;
+  totalVideos: number;
+  byStatus: StatusCount[];
+  byEditor: PersonContribution[];
+  byCaptador: PersonContribution[];
+  byRoteirista: PersonContribution[];
+  byDay: WeeklyReportByDayItem[];
+  videos: Video[];
+}
+
+export interface DashboardSummary {
+  totalVideos: number;
+  deliveredThisWeek: number;
+  deliveredThisMonth: number;
+  upcomingCount: number;
+  byStatus: StatusCount[];
+  recentVideos: Video[];
+  topContributors: PersonContribution[];
+}
+
+export type ListVideosParams = {
+  from?: string;
+  to?: string;
+};
+
+export type GetWeeklyReportParams = {
+  /**
+   * Any ISO date inside the target week
+   */
+  weekOf?: string;
+};

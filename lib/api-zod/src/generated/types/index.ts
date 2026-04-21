@@ -6,4 +6,18 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./createTeamMemberBody";
+export * from "./createVideoBody";
+export * from "./dashboardSummary";
+export * from "./getWeeklyReportParams";
 export * from "./healthStatus";
+export * from "./listVideosParams";
+export * from "./personContribution";
+export * from "./role";
+export * from "./statusCount";
+export * from "./teamMember";
+export * from "./updateVideoBody";
+export * from "./video";
+export * from "./videoStatus";
+export * from "./weeklyReport";
+export * from "./weeklyReportByDayItem";
