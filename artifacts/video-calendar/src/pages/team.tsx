@@ -45,13 +45,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DuosSection } from "@/components/duos-section";
-import { PhotoUpload, photoStorageUrl } from "@/components/photo-upload";
+import { PhotoCropUpload, photoStorageUrl } from "@/components/photo-crop-upload";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   role: z.nativeEnum(Role),
   color: z.string().min(1, "Cor é obrigatória"),
-  photoUrl: z.string().url("URL inválida").optional().or(z.literal("")),
+  photoUrl: z.string().optional(),
 });
 
 function EditMemberDialog({ member }: { member: TeamMember }) {
@@ -116,11 +116,13 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PhotoUpload
+            <PhotoCropUpload
               currentPhotoUrl={form.watch("photoUrl")}
               name={form.watch("name")}
               color={form.watch("color")}
-              onUploaded={(objectPath) => form.setValue("photoUrl", objectPath)}
+              onUploaded={(objectPath) =>
+                form.setValue("photoUrl", objectPath, { shouldDirty: true, shouldValidate: true })
+              }
             />
             <p className="text-xs text-center text-muted-foreground -mt-2">Clique na foto para alterar</p>
             <FormField
@@ -259,11 +261,13 @@ export default function Team() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <PhotoUpload
+                <PhotoCropUpload
                   currentPhotoUrl={form.watch("photoUrl")}
                   name={form.watch("name")}
                   color={form.watch("color")}
-                  onUploaded={(objectPath) => form.setValue("photoUrl", objectPath)}
+                  onUploaded={(objectPath) =>
+                    form.setValue("photoUrl", objectPath, { shouldDirty: true, shouldValidate: true })
+                  }
                 />
                 <p className="text-xs text-center text-muted-foreground -mt-2">Clique para adicionar foto</p>
                 <FormField
