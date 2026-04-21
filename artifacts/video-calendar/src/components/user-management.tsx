@@ -132,8 +132,11 @@ export function UserManagement() {
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
-                  <Badge variant={u.role === "admin" ? "default" : "secondary"} className="text-xs">
-                    {u.role === "admin" ? "Admin" : "Membro"}
+                  <Badge
+                    variant={u.role === "admin" ? "default" : "secondary"}
+                    className="text-xs"
+                  >
+                    {u.role === "admin" ? "Admin" : u.role === "operator" ? "Operador" : "Membro"}
                   </Badge>
                   <Button
                     variant="ghost"
@@ -192,6 +195,7 @@ export function UserManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="admin">Administrador (acesso total)</SelectItem>
+                <SelectItem value="operator">Operador (cadastra vídeos)</SelectItem>
                 <SelectItem value="member">Membro (só Corrida do Bônus)</SelectItem>
               </SelectContent>
             </Select>

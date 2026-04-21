@@ -11,14 +11,15 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+// roles: which roles can see this item (undefined = all authenticated users)
 const ALL_NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, adminOnly: true },
-  { href: "/calendar", label: "Calendário", icon: CalendarDays, adminOnly: true },
-  { href: "/videos", label: "Vídeos", icon: Video, adminOnly: true },
-  { href: "/team", label: "Equipe", icon: Users, adminOnly: true },
-  { href: "/report", label: "Relatório", icon: FileBarChart, adminOnly: true },
-  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown, adminOnly: false },
-  { href: "/settings", label: "Configurações", icon: Settings, adminOnly: true },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "operator"] },
+  { href: "/calendar", label: "Calendário", icon: CalendarDays, roles: ["admin", "operator"] },
+  { href: "/videos", label: "Vídeos", icon: Video, roles: ["admin", "operator"] },
+  { href: "/team", label: "Equipe", icon: Users, roles: ["admin"] },
+  { href: "/report", label: "Relatório", icon: FileBarChart, roles: ["admin"] },
+  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown, roles: ["admin", "member"] },
+  { href: "/settings", label: "Configurações", icon: Settings, roles: ["admin"] },
 ];
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -41,7 +42,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const logoSrc = photoStorageUrl(logoUrl);
 
   const navItems = ALL_NAV_ITEMS.filter(item =>
-    !item.adminOnly || user?.role === "admin"
+    user?.role ? item.roles.includes(user.role) : false
   );
 
   const LogoIcon = () =>
@@ -106,7 +107,9 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           {!collapsed && user && (
             <div className="px-2 py-1">
               <p className="text-xs font-medium truncate">{user.name ?? user.email}</p>
-              <p className="text-xs text-muted-foreground capitalize">{user.role === "admin" ? "Administrador" : "Membro"}</p>
+              <p className="text-xs text-muted-foreground capitalize">
+            {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : "Membro"}
+          </p>
             </div>
           )}
           <div className={`flex ${collapsed ? "justify-center" : "justify-between"} items-center`}>

@@ -16,14 +16,11 @@ import SettingsPage from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
+  defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
 
-const MEMBER_ONLY_PATH = "/corrida-bonus";
+const OPERATOR_PATHS = ["/", "/calendar", "/videos"];
+const MEMBER_PATH = "/corrida-bonus";
 
 function Router() {
   const { user, loading } = useAuth();
@@ -41,22 +38,33 @@ function Router() {
     return <LoginPage onSuccess={() => navigate("/")} />;
   }
 
-  // Members (non-admin) can only access the corrida-bonus page
-  if (user.role !== "admin" && location !== MEMBER_ONLY_PATH) {
-    return <Redirect to={MEMBER_ONLY_PATH} />;
-  }
-
-  // Members: only corrida-bonus is accessible (redirect handled above)
-  if (user.role !== "admin") {
+  // Member: only corrida-bonus
+  if (user.role === "member") {
+    if (location !== MEMBER_PATH) return <Redirect to={MEMBER_PATH} />;
     return (
       <SidebarLayout>
         <Switch>
-          <Route path={MEMBER_ONLY_PATH} component={CorridaBonus} />
+          <Route path={MEMBER_PATH} component={CorridaBonus} />
         </Switch>
       </SidebarLayout>
     );
   }
 
+  // Operator: dashboard, calendar, videos
+  if (user.role === "operator") {
+    if (!OPERATOR_PATHS.includes(location)) return <Redirect to="/" />;
+    return (
+      <SidebarLayout>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/calendar" component={CalendarPage} />
+          <Route path="/videos" component={VideoList} />
+        </Switch>
+      </SidebarLayout>
+    );
+  }
+
+  // Admin: full access
   return (
     <SidebarLayout>
       <Switch>

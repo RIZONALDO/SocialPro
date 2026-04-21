@@ -88,7 +88,7 @@ router.post("/auth/setup", async (req, res) => {
     .values({
       email: email.toLowerCase().trim(),
       passwordHash: hash,
-      role: isFirst ? "admin" : (role === "admin" ? "admin" : "member"),
+      role: isFirst ? "admin" : (role === "admin" ? "admin" : role === "operator" ? "operator" : "member"),
       teamMemberId: teamMemberId ?? null,
     })
     .returning();
