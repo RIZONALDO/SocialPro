@@ -247,6 +247,83 @@ export const DeleteTeamMemberParams = zod.object({
   id: zod.coerce.number(),
 });
 
+export const ListDuosResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  captadorId: zod.number().nullish(),
+  editorId: zod.number().nullish(),
+  captador: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  editor: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  dailyGoal: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+export const ListDuosResponse = zod.array(ListDuosResponseItem);
+
+export const CreateDuoBody = zod.object({
+  name: zod.string().min(1),
+  captadorId: zod.number().nullish(),
+  editorId: zod.number().nullish(),
+  dailyGoal: zod.number().optional(),
+});
+
+export const UpdateDuoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateDuoBody = zod.object({
+  name: zod.string().optional(),
+  captadorId: zod.number().nullish(),
+  editorId: zod.number().nullish(),
+  dailyGoal: zod.number().optional(),
+});
+
+export const UpdateDuoResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  captadorId: zod.number().nullish(),
+  editorId: zod.number().nullish(),
+  captador: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  editor: zod
+    .object({
+      id: zod.number(),
+      name: zod.string(),
+      role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+      color: zod.string().describe("Hex color used in UI"),
+      createdAt: zod.coerce.date(),
+    })
+    .nullish(),
+  dailyGoal: zod.number(),
+  createdAt: zod.coerce.date(),
+});
+
+export const DeleteDuoParams = zod.object({
+  id: zod.coerce.number(),
+});
+
 /**
  * @summary Weekly report (Mon-Sun) for a given reference date
  */
@@ -364,6 +441,46 @@ export const GetWeeklyReportResponse = zod.object({
         })
         .nullish(),
       createdAt: zod.coerce.date(),
+    }),
+  ),
+  byDuo: zod.array(
+    zod.object({
+      duo: zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        captadorId: zod.number().nullish(),
+        editorId: zod.number().nullish(),
+        captador: zod
+          .object({
+            id: zod.number(),
+            name: zod.string(),
+            role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+            color: zod.string().describe("Hex color used in UI"),
+            createdAt: zod.coerce.date(),
+          })
+          .nullish(),
+        editor: zod
+          .object({
+            id: zod.number(),
+            name: zod.string(),
+            role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+            color: zod.string().describe("Hex color used in UI"),
+            createdAt: zod.coerce.date(),
+          })
+          .nullish(),
+        dailyGoal: zod.number(),
+        createdAt: zod.coerce.date(),
+      }),
+      delivered: zod.number(),
+      weekGoal: zod.number(),
+      goalMet: zod.boolean(),
+      byDay: zod.array(
+        zod.object({
+          date: zod.coerce.date(),
+          count: zod.number(),
+          goalMet: zod.boolean(),
+        }),
+      ),
     }),
   ),
 });

@@ -5,6 +5,7 @@ import {
   GetDashboardSummaryResponse,
 } from "@workspace/api-zod";
 import { fetchVideos, type VideoWithPeople } from "../lib/videos";
+import { fetchDuos } from "../lib/duos";
 import type { TeamMemberRow } from "@workspace/db";
 
 const router: IRouter = Router();
@@ -65,11 +66,38 @@ router.get("/reports/weekly", async (req, res): Promise<void> => {
   const weekEnd = toISODate(end);
 
   const videos = await fetchVideos({ from: weekStart, to: weekEnd });
+  const duos = await fetchDuos();
 
   const byDay = Array.from({ length: 7 }, (_, i) => {
     const date = toISODate(addDays(start, i));
     const count = videos.filter((v) => String(v.deliveryDate) === date).length;
     return { date, count };
+  });
+
+  const deliveredVideos = videos.filter(
+    (v) => v.status === "entregue" || v.status === "publicado",
+  );
+
+  const byDuo = duos.map((d) => {
+    const matches = deliveredVideos.filter(
+      (v) =>
+        (d.captadorId == null || v.captadorId === d.captadorId) &&
+        (d.editorId == null || v.editorId === d.editorId) &&
+        (d.captadorId != null || d.editorId != null),
+    );
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const date = toISODate(addDays(start, i));
+      const count = matches.filter((v) => String(v.deliveryDate) === date).length;
+      return { date, count, goalMet: count >= d.dailyGoal };
+    });
+    const weekGoal = d.dailyGoal * 7;
+    return {
+      duo: d,
+      delivered: matches.length,
+      weekGoal,
+      goalMet: matches.length >= weekGoal,
+      byDay: days,
+    };
   });
 
   const report = {
@@ -81,6 +109,7 @@ router.get("/reports/weekly", async (req, res): Promise<void> => {
     byCaptador: groupContributions(videos, (v) => v.captador),
     byRoteirista: groupContributions(videos, (v) => v.roteirista),
     byDay,
+    byDuo,
     videos,
   };
 

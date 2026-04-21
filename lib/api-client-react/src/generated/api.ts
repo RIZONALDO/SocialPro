@@ -17,13 +17,16 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  CreateDuoBody,
   CreateTeamMemberBody,
   CreateVideoBody,
   DashboardSummary,
+  Duo,
   GetWeeklyReportParams,
   HealthStatus,
   ListVideosParams,
   TeamMember,
+  UpdateDuoBody,
   UpdateVideoBody,
   Video,
   WeeklyReport,
@@ -754,6 +757,303 @@ export const useDeleteTeamMember = <
   TContext
 > => {
   return useMutation(getDeleteTeamMemberMutationOptions(options));
+};
+
+export const getListDuosUrl = () => {
+  return `/api/duos`;
+};
+
+export const listDuos = async (options?: RequestInit): Promise<Duo[]> => {
+  return customFetch<Duo[]>(getListDuosUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListDuosQueryKey = () => {
+  return [`/api/duos`] as const;
+};
+
+export const getListDuosQueryOptions = <
+  TData = Awaited<ReturnType<typeof listDuos>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listDuos>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListDuosQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listDuos>>> = ({
+    signal,
+  }) => listDuos({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listDuos>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListDuosQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listDuos>>
+>;
+export type ListDuosQueryError = ErrorType<unknown>;
+
+export function useListDuos<
+  TData = Awaited<ReturnType<typeof listDuos>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof listDuos>>, TError, TData>;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListDuosQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+export const getCreateDuoUrl = () => {
+  return `/api/duos`;
+};
+
+export const createDuo = async (
+  createDuoBody: CreateDuoBody,
+  options?: RequestInit,
+): Promise<Duo> => {
+  return customFetch<Duo>(getCreateDuoUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createDuoBody),
+  });
+};
+
+export const getCreateDuoMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createDuo>>,
+    TError,
+    { data: BodyType<CreateDuoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createDuo>>,
+  TError,
+  { data: BodyType<CreateDuoBody> },
+  TContext
+> => {
+  const mutationKey = ["createDuo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createDuo>>,
+    { data: BodyType<CreateDuoBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createDuo(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateDuoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createDuo>>
+>;
+export type CreateDuoMutationBody = BodyType<CreateDuoBody>;
+export type CreateDuoMutationError = ErrorType<unknown>;
+
+export const useCreateDuo = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createDuo>>,
+    TError,
+    { data: BodyType<CreateDuoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createDuo>>,
+  TError,
+  { data: BodyType<CreateDuoBody> },
+  TContext
+> => {
+  return useMutation(getCreateDuoMutationOptions(options));
+};
+
+export const getUpdateDuoUrl = (id: number) => {
+  return `/api/duos/${id}`;
+};
+
+export const updateDuo = async (
+  id: number,
+  updateDuoBody: UpdateDuoBody,
+  options?: RequestInit,
+): Promise<Duo> => {
+  return customFetch<Duo>(getUpdateDuoUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateDuoBody),
+  });
+};
+
+export const getUpdateDuoMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDuo>>,
+    TError,
+    { id: number; data: BodyType<UpdateDuoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateDuo>>,
+  TError,
+  { id: number; data: BodyType<UpdateDuoBody> },
+  TContext
+> => {
+  const mutationKey = ["updateDuo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateDuo>>,
+    { id: number; data: BodyType<UpdateDuoBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateDuo(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateDuoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateDuo>>
+>;
+export type UpdateDuoMutationBody = BodyType<UpdateDuoBody>;
+export type UpdateDuoMutationError = ErrorType<unknown>;
+
+export const useUpdateDuo = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateDuo>>,
+    TError,
+    { id: number; data: BodyType<UpdateDuoBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateDuo>>,
+  TError,
+  { id: number; data: BodyType<UpdateDuoBody> },
+  TContext
+> => {
+  return useMutation(getUpdateDuoMutationOptions(options));
+};
+
+export const getDeleteDuoUrl = (id: number) => {
+  return `/api/duos/${id}`;
+};
+
+export const deleteDuo = async (
+  id: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteDuoUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteDuoMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDuo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteDuo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteDuo"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteDuo>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteDuo(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteDuoMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteDuo>>
+>;
+
+export type DeleteDuoMutationError = ErrorType<unknown>;
+
+export const useDeleteDuo = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteDuo>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteDuo>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteDuoMutationOptions(options));
 };
 
 /**

@@ -34,6 +34,46 @@ export interface CreateTeamMemberBody {
   color?: string;
 }
 
+export interface Duo {
+  id: number;
+  name: string;
+  captadorId?: number | null;
+  editorId?: number | null;
+  captador?: TeamMember | null;
+  editor?: TeamMember | null;
+  dailyGoal: number;
+  createdAt: string;
+}
+
+export interface CreateDuoBody {
+  /** @minLength 1 */
+  name: string;
+  captadorId?: number | null;
+  editorId?: number | null;
+  dailyGoal?: number;
+}
+
+export interface UpdateDuoBody {
+  name?: string;
+  captadorId?: number | null;
+  editorId?: number | null;
+  dailyGoal?: number;
+}
+
+export interface DuoDayCount {
+  date: string;
+  count: number;
+  goalMet: boolean;
+}
+
+export interface DuoReport {
+  duo: Duo;
+  delivered: number;
+  weekGoal: number;
+  goalMet: boolean;
+  byDay: DuoDayCount[];
+}
+
 export type VideoStatus = (typeof VideoStatus)[keyof typeof VideoStatus];
 
 export const VideoStatus = {
@@ -116,6 +156,7 @@ export interface WeeklyReport {
   byRoteirista: PersonContribution[];
   byDay: WeeklyReportByDayItem[];
   videos: Video[];
+  byDuo: DuoReport[];
 }
 
 export interface DashboardSummary {

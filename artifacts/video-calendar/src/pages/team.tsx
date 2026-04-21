@@ -35,6 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { DuosSection } from "@/components/duos-section";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -220,6 +221,10 @@ export default function Team() {
           })}
         </div>
       )}
+
+      <div className="pt-6 border-t">
+        <DuosSection />
+      </div>
     </div>
   );
 }

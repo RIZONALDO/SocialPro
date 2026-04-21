@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { DuoReport } from "./duoReport";
 import type { PersonContribution } from "./personContribution";
 import type { StatusCount } from "./statusCount";
 import type { Video } from "./video";
@@ -20,4 +21,5 @@ export interface WeeklyReport {
   byRoteirista: PersonContribution[];
   byDay: WeeklyReportByDayItem[];
   videos: Video[];
+  byDuo: DuoReport[];
 }

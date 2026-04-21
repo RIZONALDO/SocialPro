@@ -181,6 +181,62 @@ export default function Report() {
             </Card>
           </div>
 
+          {report.byDuo && report.byDuo.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Duplas — Meta Diária</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {report.byDuo.map((d) => (
+                    <div key={d.duo.id} className="space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          <p className="font-semibold">{d.duo.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {d.duo.captador?.name || "—"} <span className="opacity-50">+</span> {d.duo.editor?.name || "—"}
+                            <span className="mx-2">•</span>
+                            Meta: {d.duo.dailyGoal}/dia ({d.weekGoal}/semana)
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                            d.goalMet ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {d.delivered} / {d.weekGoal} {d.goalMet ? "— meta batida" : ""}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-7 gap-1">
+                        {d.byDay.map((day) => {
+                          const pct = d.duo.dailyGoal > 0 ? Math.min(100, (day.count / d.duo.dailyGoal) * 100) : 0;
+                          return (
+                            <div key={day.date} className="text-center">
+                              <div className="text-[10px] text-muted-foreground uppercase">
+                                {format(parseISO(day.date), "EEE", { locale: ptBR })}
+                              </div>
+                              <div className="h-16 bg-muted rounded relative overflow-hidden mt-1">
+                                <div
+                                  className={`absolute bottom-0 left-0 right-0 ${
+                                    day.goalMet ? "bg-emerald-500" : "bg-amber-400"
+                                  }`}
+                                  style={{ height: `${pct}%` }}
+                                />
+                                <div className="absolute inset-0 flex items-center justify-center text-xs font-bold">
+                                  {day.count}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card>
             <CardHeader>
               <CardTitle>Todos os Vídeos ({report.videos.length})</CardTitle>

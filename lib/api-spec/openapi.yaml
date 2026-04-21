@@ -149,6 +149,63 @@ paths:
       responses:
         "204": { description: Deleted }
 
+  /duos:
+    get:
+      operationId: listDuos
+      tags: [team]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Duo" }
+    post:
+      operationId: createDuo
+      tags: [team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateDuoBody" }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Duo" }
+  /duos/{id}:
+    patch:
+      operationId: updateDuo
+      tags: [team]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateDuoBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Duo" }
+    delete:
+      operationId: deleteDuo
+      tags: [team]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "204": { description: Deleted }
+
   /reports/weekly:
     get:
       operationId: getWeeklyReport
@@ -207,6 +264,56 @@ components:
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string }
       required: [name, role]
+
+    Duo:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        captadorId: { type: integer, nullable: true }
+        editorId: { type: integer, nullable: true }
+        captador: { allOf: [{ $ref: "#/components/schemas/TeamMember" }], nullable: true }
+        editor: { allOf: [{ $ref: "#/components/schemas/TeamMember" }], nullable: true }
+        dailyGoal: { type: integer }
+        createdAt: { type: string, format: date-time }
+      required: [id, name, dailyGoal, createdAt]
+
+    CreateDuoBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        captadorId: { type: integer, nullable: true }
+        editorId: { type: integer, nullable: true }
+        dailyGoal: { type: integer }
+      required: [name]
+
+    UpdateDuoBody:
+      type: object
+      properties:
+        name: { type: string }
+        captadorId: { type: integer, nullable: true }
+        editorId: { type: integer, nullable: true }
+        dailyGoal: { type: integer }
+
+    DuoDayCount:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        count: { type: integer }
+        goalMet: { type: boolean }
+      required: [date, count, goalMet]
+
+    DuoReport:
+      type: object
+      properties:
+        duo: { $ref: "#/components/schemas/Duo" }
+        delivered: { type: integer }
+        weekGoal: { type: integer }
+        goalMet: { type: boolean }
+        byDay:
+          type: array
+          items: { $ref: "#/components/schemas/DuoDayCount" }
+      required: [duo, delivered, weekGoal, goalMet, byDay]
 
     VideoStatus:
       type: string
@@ -304,7 +411,10 @@ components:
         videos:
           type: array
           items: { $ref: "#/components/schemas/Video" }
-      required: [weekStart, weekEnd, totalVideos, byStatus, byEditor, byCaptador, byRoteirista, byDay, videos]
+        byDuo:
+          type: array
+          items: { $ref: "#/components/schemas/DuoReport" }
+      required: [weekStart, weekEnd, totalVideos, byStatus, byEditor, byCaptador, byRoteirista, byDay, byDuo, videos]
 
     DashboardSummary:
       type: object
