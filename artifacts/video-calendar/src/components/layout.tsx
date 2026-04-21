@@ -1,13 +1,16 @@
 import { Link, useLocation } from "wouter";
-import { CalendarDays, LayoutDashboard, Video, Users, FileBarChart, Settings, Crown } from "lucide-react";
+import { CalendarDays, LayoutDashboard, Video, Users, FileBarChart, Settings, Crown, Sun, Moon } from "lucide-react";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { photoStorageUrl } from "@/components/photo-upload";
+import { useTheme } from "@/lib/theme";
+import { Button } from "@/components/ui/button";
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const appName = settings?.appName ?? "Minha Produtora";
   const logoUrl = settings?.logoUrl ?? null;
+  const { theme, toggle } = useTheme();
 
   const navItems = [
     { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -65,6 +68,16 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
               <LogoIcon />
               <span className="truncate">{appName}</span>
             </Link>
+          </div>
+          <div className="ml-auto">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggle}
+              title={theme === "dark" ? "Mudar para tema claro" : "Mudar para tema escuro"}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
           </div>
         </header>
         <main className="flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
