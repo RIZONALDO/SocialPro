@@ -1,9 +1,19 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
+import rateLimit from "express-rate-limit";
 import { db, usersTable, teamMembersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
 const router = Router();
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: "Muitas tentativas. Aguarde 15 minutos e tente novamente." },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true,
+});
 
 // GET /api/auth/me
 router.get("/auth/me", async (req, res) => {
@@ -25,7 +35,7 @@ router.get("/auth/me", async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post("/auth/login", async (req, res) => {
+router.post("/auth/login", loginLimiter, async (req, res) => {
   const { username, password } = req.body as { username?: string; password?: string };
   if (!username || !password) {
     return res.status(400).json({ error: "Usuário e senha são obrigatórios" });
@@ -51,6 +61,30 @@ router.post("/auth/login", async (req, res) => {
 router.post("/auth/logout", (req, res) => {
   req.session.destroy(() => {});
   res.json({ ok: true });
+});
+
+// POST /api/auth/change-password — logged-in user changes their own password
+router.post("/auth/change-password", async (req, res) => {
+  const session = req.session as { userId?: number };
+  if (!session.userId) return res.status(401).json({ error: "Não autenticado" });
+
+  const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: "Senha atual e nova senha são obrigatórias" });
+  }
+  if (newPassword.length < 6) {
+    return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres" });
+  }
+
+  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, session.userId));
+  if (!user) return res.status(401).json({ error: "Sessão inválida" });
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return res.status(400).json({ error: "Senha atual incorreta" });
+
+  const hash = await bcrypt.hash(newPassword, 12);
+  await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, session.userId));
+  return res.json({ ok: true });
 });
 
 // POST /api/auth/setup — create first admin or any user (admin only after first user)
@@ -124,6 +158,24 @@ router.get("/users", async (req, res) => {
     ...u,
     name: u.teamMemberId ? (byId.get(u.teamMemberId)?.name ?? null) : null,
   })));
+});
+
+// POST /api/users/:id/reset-password — admin resets another user's password
+router.post("/users/:id/reset-password", async (req, res) => {
+  const session = req.session as { userId?: number };
+  if (!session.userId) return res.status(401).json({ error: "Não autenticado" });
+  const [caller] = await db.select().from(usersTable).where(eq(usersTable.id, session.userId));
+  if (!caller || caller.role !== "admin") return res.status(403).json({ error: "Sem permissão" });
+
+  const targetId = Number(req.params.id);
+  const { newPassword } = req.body as { newPassword?: string };
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres" });
+  }
+
+  const hash = await bcrypt.hash(newPassword, 12);
+  await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, targetId));
+  return res.json({ ok: true });
 });
 
 // DELETE /api/users/:id — remove a user (admin only, cannot delete self)

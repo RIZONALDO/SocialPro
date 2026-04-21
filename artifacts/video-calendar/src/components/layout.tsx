@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 
 // roles: which roles can see this item (undefined = all authenticated users)
 const ALL_NAV_ITEMS = [
@@ -112,30 +113,52 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           </p>
             </div>
           )}
-          <div className={`flex ${collapsed ? "justify-center" : "justify-between"} items-center`}>
+          <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "justify-between"} items-center`}>
             {collapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive">
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive">
+                      <LogOut className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Sair</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span><ChangePasswordDialog collapsed /></span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Trocar senha</TooltipContent>
+                </Tooltip>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed((c) => !c)}
+                  title="Expandir menu"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <PanelLeftOpen className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-1">
+                  <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
                     <LogOut className="h-4 w-4" />
                   </Button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Sair</TooltipContent>
-              </Tooltip>
-            ) : (
-              <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
-                <LogOut className="h-4 w-4" />
-              </Button>
+                  <ChangePasswordDialog />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setCollapsed((c) => !c)}
+                  title="Recolher menu"
+                  className="text-muted-foreground hover:text-primary"
+                >
+                  <PanelLeftClose className="h-4 w-4" />
+                </Button>
+              </>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setCollapsed((c) => !c)}
-              title={collapsed ? "Expandir menu" : "Recolher menu"}
-              className="text-muted-foreground hover:text-primary"
-            >
-              {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-            </Button>
           </div>
         </div>
       </aside>

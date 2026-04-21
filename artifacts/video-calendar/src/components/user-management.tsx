@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, UserPlus, RefreshCw } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Trash2, UserPlus, RefreshCw, KeyRound } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -41,6 +42,18 @@ async function createUser(payload: {
   return (data as { error?: string }).error ?? "Erro ao criar usuário";
 }
 
+async function resetUserPassword(id: number, newPassword: string): Promise<string | null> {
+  const res = await fetch(`${BASE}/api/users/${id}/reset-password`, {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ newPassword }),
+  });
+  if (res.ok) return null;
+  const data = await res.json();
+  return (data as { error?: string }).error ?? "Erro ao redefinir senha";
+}
+
 async function deleteUser(id: number): Promise<string | null> {
   const res = await fetch(`${BASE}/api/users/${id}`, {
     method: "DELETE",
@@ -64,6 +77,10 @@ export function UserManagement() {
   const [role, setRole] = useState("member");
   const [teamMemberId, setTeamMemberId] = useState<string>("none");
   const [creating, setCreating] = useState(false);
+
+  const [resetTarget, setResetTarget] = useState<AppUser | null>(null);
+  const [resetPassword, setResetPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const load = useCallback(async () => {
     setLoadingUsers(true);
@@ -107,10 +124,57 @@ export function UserManagement() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetTarget) return;
+    setResetting(true);
+    const err = await resetUserPassword(resetTarget.id, resetPassword);
+    setResetting(false);
+    if (err) {
+      toast({ title: err, variant: "destructive" });
+    } else {
+      toast({ title: `Senha de ${resetTarget.name ?? resetTarget.username} redefinida` });
+      setResetTarget(null);
+      setResetPassword("");
+    }
+  };
+
   const usedMemberIds = new Set(users.map((u) => u.teamMemberId).filter(Boolean));
 
   return (
     <div className="space-y-6">
+      {/* Reset password dialog */}
+      <Dialog open={!!resetTarget} onOpenChange={(v) => { if (!v) { setResetTarget(null); setResetPassword(""); } }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Redefinir senha — {resetTarget?.name ?? resetTarget?.username}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="reset-pw">Nova senha</Label>
+              <Input
+                id="reset-pw"
+                type="password"
+                value={resetPassword}
+                onChange={(e) => setResetPassword(e.target.value)}
+                required
+                minLength={6}
+                placeholder="Mínimo 6 caracteres"
+                autoFocus
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setResetTarget(null)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={resetting}>
+                {resetting ? "Salvando..." : "Redefinir"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Existing users */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
@@ -131,13 +195,22 @@ export function UserManagement() {
                   <p className="text-sm font-medium truncate">{u.name ?? u.username}</p>
                   <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
                 </div>
-                <div className="flex items-center gap-2 ml-2 flex-shrink-0">
+                <div className="flex items-center gap-1 ml-2 flex-shrink-0">
                   <Badge
                     variant={u.role === "admin" ? "default" : "secondary"}
                     className="text-xs"
                   >
                     {u.role === "admin" ? "Admin" : u.role === "operator" ? "Operador" : "Membro"}
                   </Badge>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-primary h-8 w-8"
+                    title="Redefinir senha"
+                    onClick={() => { setResetTarget(u); setResetPassword(""); }}
+                  >
+                    <KeyRound className="h-3.5 w-3.5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="icon"
