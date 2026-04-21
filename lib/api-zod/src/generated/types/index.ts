@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./appSettings";
 export * from "./createDuoBody";
 export * from "./createTeamMemberBody";
 export * from "./createVideoBody";
@@ -21,6 +22,7 @@ export * from "./role";
 export * from "./statusCount";
 export * from "./teamMember";
 export * from "./updateDuoBody";
+export * from "./updateTeamMemberBody";
 export * from "./updateVideoBody";
 export * from "./video";
 export * from "./videoStatus";

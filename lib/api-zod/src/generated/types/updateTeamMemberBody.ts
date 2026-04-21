@@ -7,12 +7,9 @@
  */
 import type { Role } from "./role";
 
-export interface TeamMember {
-  id: number;
-  name: string;
-  role: Role;
-  /** Hex color used in UI */
-  color: string;
+export interface UpdateTeamMemberBody {
+  name?: string;
+  role?: Role;
+  color?: string;
   photoUrl?: string | null;
-  createdAt: Date;
 }

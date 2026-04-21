@@ -12,4 +12,5 @@ export interface CreateTeamMemberBody {
   name: string;
   role: Role;
   color?: string;
+  photoUrl?: string | null;
 }

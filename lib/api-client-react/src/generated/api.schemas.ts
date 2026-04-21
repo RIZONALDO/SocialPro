@@ -24,6 +24,7 @@ export interface TeamMember {
   role: Role;
   /** Hex color used in UI */
   color: string;
+  photoUrl?: string | null;
   createdAt: string;
 }
 
@@ -32,6 +33,19 @@ export interface CreateTeamMemberBody {
   name: string;
   role: Role;
   color?: string;
+  photoUrl?: string | null;
+}
+
+export interface UpdateTeamMemberBody {
+  name?: string;
+  role?: Role;
+  color?: string;
+  photoUrl?: string | null;
+}
+
+export interface AppSettings {
+  appName: string;
+  logoUrl?: string | null;
 }
 
 export interface Duo {

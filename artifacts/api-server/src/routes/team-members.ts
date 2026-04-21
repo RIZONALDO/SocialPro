@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db, teamMembersTable } from "@workspace/db";
 import {
   CreateTeamMemberBody,
+  UpdateTeamMemberParams,
+  UpdateTeamMemberBody,
   DeleteTeamMemberParams,
   ListTeamMembersResponse,
 } from "@workspace/api-zod";
@@ -32,9 +34,38 @@ router.post("/team-members", async (req, res): Promise<void> => {
   const color = data.color ?? PALETTE[Math.floor(Math.random() * PALETTE.length)]!;
   const [row] = await db
     .insert(teamMembersTable)
-    .values({ name: data.name, role: data.role, color })
+    .values({ name: data.name, role: data.role, color, photoUrl: data.photoUrl ?? null })
     .returning();
   res.status(201).json(row);
+});
+
+router.patch("/team-members/:id", async (req, res): Promise<void> => {
+  const params = UpdateTeamMemberParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const parsed = UpdateTeamMemberBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
+  const d = parsed.data;
+  const update: Record<string, unknown> = {};
+  if (d.name !== undefined) update.name = d.name;
+  if (d.role !== undefined) update.role = d.role;
+  if (d.color !== undefined) update.color = d.color;
+  if ("photoUrl" in d) update.photoUrl = d.photoUrl ?? null;
+  const [row] = await db
+    .update(teamMembersTable)
+    .set(update)
+    .where(eq(teamMembersTable.id, params.data.id))
+    .returning();
+  if (!row) {
+    res.status(404).json({ error: "Team member not found" });
+    return;
+  }
+  res.json(row);
 });
 
 router.delete("/team-members/:id", async (req, res): Promise<void> => {

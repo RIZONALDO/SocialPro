@@ -47,6 +47,7 @@ export const ListVideosResponseItem = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -56,6 +57,7 @@ export const ListVideosResponseItem = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -65,6 +67,7 @@ export const ListVideosResponseItem = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -125,6 +128,7 @@ export const GetVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -134,6 +138,7 @@ export const GetVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -143,6 +148,7 @@ export const GetVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -200,6 +206,7 @@ export const UpdateVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -209,6 +216,7 @@ export const UpdateVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -218,6 +226,7 @@ export const UpdateVideoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -233,6 +242,7 @@ export const ListTeamMembersResponseItem = zod.object({
   name: zod.string(),
   role: zod.enum(["editor", "captador", "roteirista", "outro"]),
   color: zod.string().describe("Hex color used in UI"),
+  photoUrl: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListTeamMembersResponse = zod.array(ListTeamMembersResponseItem);
@@ -241,10 +251,46 @@ export const CreateTeamMemberBody = zod.object({
   name: zod.string().min(1),
   role: zod.enum(["editor", "captador", "roteirista", "outro"]),
   color: zod.string().optional(),
+  photoUrl: zod.string().nullish(),
+});
+
+export const UpdateTeamMemberParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateTeamMemberBody = zod.object({
+  name: zod.string().optional(),
+  role: zod.enum(["editor", "captador", "roteirista", "outro"]).optional(),
+  color: zod.string().optional(),
+  photoUrl: zod.string().nullish(),
+});
+
+export const UpdateTeamMemberResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  role: zod.enum(["editor", "captador", "roteirista", "outro"]),
+  color: zod.string().describe("Hex color used in UI"),
+  photoUrl: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
 });
 
 export const DeleteTeamMemberParams = zod.object({
   id: zod.coerce.number(),
+});
+
+export const GetSettingsResponse = zod.object({
+  appName: zod.string(),
+  logoUrl: zod.string().nullish(),
+});
+
+export const UpdateSettingsBody = zod.object({
+  appName: zod.string(),
+  logoUrl: zod.string().nullish(),
+});
+
+export const UpdateSettingsResponse = zod.object({
+  appName: zod.string(),
+  logoUrl: zod.string().nullish(),
 });
 
 export const ListDuosResponseItem = zod.object({
@@ -258,6 +304,7 @@ export const ListDuosResponseItem = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -267,6 +314,7 @@ export const ListDuosResponseItem = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -304,6 +352,7 @@ export const UpdateDuoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -313,6 +362,7 @@ export const UpdateDuoResponse = zod.object({
       name: zod.string(),
       role: zod.enum(["editor", "captador", "roteirista", "outro"]),
       color: zod.string().describe("Hex color used in UI"),
+      photoUrl: zod.string().nullish(),
       createdAt: zod.coerce.date(),
     })
     .nullish(),
@@ -355,6 +405,7 @@ export const GetWeeklyReportResponse = zod.object({
         name: zod.string(),
         role: zod.enum(["editor", "captador", "roteirista", "outro"]),
         color: zod.string().describe("Hex color used in UI"),
+        photoUrl: zod.string().nullish(),
         createdAt: zod.coerce.date(),
       }),
       count: zod.number(),
@@ -367,6 +418,7 @@ export const GetWeeklyReportResponse = zod.object({
         name: zod.string(),
         role: zod.enum(["editor", "captador", "roteirista", "outro"]),
         color: zod.string().describe("Hex color used in UI"),
+        photoUrl: zod.string().nullish(),
         createdAt: zod.coerce.date(),
       }),
       count: zod.number(),
@@ -379,6 +431,7 @@ export const GetWeeklyReportResponse = zod.object({
         name: zod.string(),
         role: zod.enum(["editor", "captador", "roteirista", "outro"]),
         color: zod.string().describe("Hex color used in UI"),
+        photoUrl: zod.string().nullish(),
         createdAt: zod.coerce.date(),
       }),
       count: zod.number(),
@@ -419,6 +472,7 @@ export const GetWeeklyReportResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -428,6 +482,7 @@ export const GetWeeklyReportResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -437,6 +492,7 @@ export const GetWeeklyReportResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -456,6 +512,7 @@ export const GetWeeklyReportResponse = zod.object({
             name: zod.string(),
             role: zod.enum(["editor", "captador", "roteirista", "outro"]),
             color: zod.string().describe("Hex color used in UI"),
+            photoUrl: zod.string().nullish(),
             createdAt: zod.coerce.date(),
           })
           .nullish(),
@@ -465,6 +522,7 @@ export const GetWeeklyReportResponse = zod.object({
             name: zod.string(),
             role: zod.enum(["editor", "captador", "roteirista", "outro"]),
             color: zod.string().describe("Hex color used in UI"),
+            photoUrl: zod.string().nullish(),
             createdAt: zod.coerce.date(),
           })
           .nullish(),
@@ -535,6 +593,7 @@ export const GetDashboardSummaryResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -544,6 +603,7 @@ export const GetDashboardSummaryResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -553,6 +613,7 @@ export const GetDashboardSummaryResponse = zod.object({
           name: zod.string(),
           role: zod.enum(["editor", "captador", "roteirista", "outro"]),
           color: zod.string().describe("Hex color used in UI"),
+          photoUrl: zod.string().nullish(),
           createdAt: zod.coerce.date(),
         })
         .nullish(),
@@ -566,6 +627,7 @@ export const GetDashboardSummaryResponse = zod.object({
         name: zod.string(),
         role: zod.enum(["editor", "captador", "roteirista", "outro"]),
         color: zod.string().describe("Hex color used in UI"),
+        photoUrl: zod.string().nullish(),
         createdAt: zod.coerce.date(),
       }),
       count: zod.number(),

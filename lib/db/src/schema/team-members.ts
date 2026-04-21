@@ -5,6 +5,7 @@ export const teamMembersTable = pgTable("team_members", {
   name: text("name").notNull(),
   role: text("role").notNull(),
   color: text("color").notNull().default("#6366f1"),
+  photoUrl: text("photo_url"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

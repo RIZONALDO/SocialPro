@@ -138,6 +138,25 @@ paths:
             application/json:
               schema: { $ref: "#/components/schemas/TeamMember" }
   /team-members/{id}:
+    patch:
+      operationId: updateTeamMember
+      tags: [team]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateTeamMemberBody" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TeamMember" }
     delete:
       operationId: deleteTeamMember
       tags: [team]
@@ -148,6 +167,31 @@ paths:
           schema: { type: integer }
       responses:
         "204": { description: Deleted }
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [team]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AppSettings" }
+    put:
+      operationId: updateSettings
+      tags: [team]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AppSettings" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AppSettings" }
 
   /duos:
     get:
@@ -254,6 +298,7 @@ components:
         name: { type: string }
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string, description: "Hex color used in UI" }
+        photoUrl: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
       required: [id, name, role, color, createdAt]
 
@@ -263,7 +308,23 @@ components:
         name: { type: string, minLength: 1 }
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string }
+        photoUrl: { type: string, nullable: true }
       required: [name, role]
+
+    UpdateTeamMemberBody:
+      type: object
+      properties:
+        name: { type: string }
+        role: { $ref: "#/components/schemas/Role" }
+        color: { type: string }
+        photoUrl: { type: string, nullable: true }
+
+    AppSettings:
+      type: object
+      properties:
+        appName: { type: string }
+        logoUrl: { type: string, nullable: true }
+      required: [appName]
 
     Duo:
       type: object
