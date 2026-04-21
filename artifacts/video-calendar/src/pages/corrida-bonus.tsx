@@ -26,6 +26,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { photoStorageUrl } from "@/lib/photo-storage";
 
 type Period = "semana" | "mes";
 
@@ -236,12 +238,20 @@ export default function CorridaBonus() {
                             </span>
                           )}
                         </div>
-                        {/* Avatar */}
-                        <div
-                          className="h-10 w-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow"
-                          style={{ backgroundColor: isBonusWinner ? "#f59e0b" : racerColor }}
-                        >
-                          {d.duo.name.substring(0, 2).toUpperCase()}
+                        {/* Avatar — stacked captador + editor */}
+                        <div className="relative h-10 w-14 flex-shrink-0">
+                          <Avatar className="h-9 w-9 absolute left-0 top-0.5 border-2 border-background shadow">
+                            <AvatarImage src={photoStorageUrl(d.duo.captador?.photoUrl)} alt={d.duo.captador?.name} />
+                            <AvatarFallback className="text-[10px] font-bold text-white" style={{ backgroundColor: isBonusWinner ? "#f59e0b" : racerColor }}>
+                              {(d.duo.captador?.name ?? "?").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <Avatar className="h-9 w-9 absolute left-5 top-0.5 border-2 border-background shadow">
+                            <AvatarImage src={photoStorageUrl(d.duo.editor?.photoUrl)} alt={d.duo.editor?.name} />
+                            <AvatarFallback className="text-[10px] font-bold text-white" style={{ backgroundColor: isBonusWinner ? "#d97706" : racerColor }}>
+                              {(d.duo.editor?.name ?? "?").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold truncate flex items-center gap-1.5">

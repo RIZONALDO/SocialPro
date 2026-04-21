@@ -27,11 +27,13 @@ router.get("/auth/me", async (req, res) => {
     return res.status(401).json({ error: "Sessão inválida" });
   }
   let name: string | null = null;
+  let photoUrl: string | null = null;
   if (user.teamMemberId) {
     const [member] = await db.select().from(teamMembersTable).where(eq(teamMembersTable.id, user.teamMemberId));
     name = member?.name ?? null;
+    photoUrl = member?.photoUrl ?? null;
   }
-  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl });
 });
 
 // POST /api/auth/login
@@ -50,11 +52,13 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
   }
   (req.session as { userId?: number }).userId = user.id;
   let name: string | null = null;
+  let photoUrl: string | null = null;
   if (user.teamMemberId) {
     const [member] = await db.select().from(teamMembersTable).where(eq(teamMembersTable.id, user.teamMemberId));
     name = member?.name ?? null;
+    photoUrl = member?.photoUrl ?? null;
   }
-  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl });
 });
 
 // POST /api/auth/logout

@@ -8,6 +8,7 @@ export interface AuthUser {
   role: UserRole;
   teamMemberId: number | null;
   name: string | null;
+  photoUrl: string | null;
 }
 
 interface AuthContextValue {

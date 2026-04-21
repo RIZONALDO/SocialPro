@@ -10,6 +10,7 @@ import { useTheme } from "@/lib/theme";
 import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChangePasswordDialog } from "@/components/change-password-dialog";
 
 // roles: which roles can see this item (undefined = all authenticated users)
@@ -137,12 +138,22 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
 
         {/* Bottom: user info + collapse toggle */}
         <div className="border-t px-2 py-2 space-y-1">
-          {!collapsed && user && (
-            <div className="px-2 py-1">
-              <p className="text-xs font-medium truncate">{user.name ?? user.username}</p>
-              <p className="text-xs text-muted-foreground capitalize">
-            {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : "Membro"}
-          </p>
+          {user && (
+            <div className={`flex items-center gap-2 px-2 py-1 ${collapsed ? "justify-center" : ""}`}>
+              <Avatar className="h-7 w-7 flex-shrink-0">
+                <AvatarImage src={photoStorageUrl(user.photoUrl)} alt={user.name ?? user.username} />
+                <AvatarFallback className="text-xs bg-primary/20 text-primary">
+                  {(user.name ?? user.username).substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              {!collapsed && (
+                <div className="min-w-0">
+                  <p className="text-xs font-medium truncate">{user.name ?? user.username}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : "Membro"}
+                  </p>
+                </div>
+              )}
             </div>
           )}
           <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "justify-start gap-1"} items-center`}>

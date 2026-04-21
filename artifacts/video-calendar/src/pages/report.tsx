@@ -37,7 +37,8 @@ import {
   Cell,
   Legend,
 } from "recharts";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { photoStorageUrl } from "@/lib/photo-storage";
 
 type PeriodMode = "semanal" | "mensal";
 
@@ -356,6 +357,7 @@ function ContributorList({ contributors }: { contributors: any[] }) {
       {contributors.map((c) => (
         <div key={c.member.id} className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
+            <AvatarImage src={photoStorageUrl(c.member.photoUrl)} alt={c.member.name} />
             <AvatarFallback style={{ backgroundColor: c.member.color, color: "#fff" }}>
               {c.member.name.substring(0, 2).toUpperCase()}
             </AvatarFallback>

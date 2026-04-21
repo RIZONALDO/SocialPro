@@ -12,7 +12,8 @@ import {
   Tooltip as RechartsTooltip,
   Legend,
 } from "recharts";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { photoStorageUrl } from "@/lib/photo-storage";
 import { Film, CheckCheck, CalendarCheck, Clock } from "lucide-react";
 
 export default function Dashboard() {
@@ -188,6 +189,7 @@ export default function Dashboard() {
                   summary.topContributors.map((c) => (
                     <div key={c.member.id} className="flex items-center gap-4">
                       <Avatar className="h-8 w-8">
+                        <AvatarImage src={photoStorageUrl(c.member.photoUrl)} alt={c.member.name} />
                         <AvatarFallback style={{ backgroundColor: c.member.color, color: "#fff" }}>
                           {c.member.name.substring(0, 2).toUpperCase()}
                         </AvatarFallback>
