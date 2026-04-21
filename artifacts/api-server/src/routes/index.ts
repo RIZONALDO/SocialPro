@@ -5,6 +5,7 @@ import videosRouter from "./videos";
 import reportsRouter from "./reports";
 import duosRouter from "./duos";
 import settingsRouter from "./settings";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -14,5 +15,6 @@ router.use(videosRouter);
 router.use(duosRouter);
 router.use(reportsRouter);
 router.use(settingsRouter);
+router.use(storageRouter);
 
 export default router;

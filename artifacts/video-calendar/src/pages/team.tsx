@@ -45,6 +45,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DuosSection } from "@/components/duos-section";
+import { PhotoUpload, photoStorageUrl } from "@/components/photo-upload";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
@@ -102,8 +103,6 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
     );
   };
 
-  const photoUrl = form.watch("photoUrl");
-
   return (
     <Dialog open={open} onOpenChange={handleOpen}>
       <DialogTrigger asChild>
@@ -117,14 +116,13 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="flex justify-center">
-              <Avatar className="h-20 w-20 border-2" style={{ borderColor: form.watch("color") }}>
-                <AvatarImage src={photoUrl || undefined} alt={form.watch("name")} />
-                <AvatarFallback style={{ backgroundColor: form.watch("color"), color: "#fff", fontSize: "1.5rem" }}>
-                  {form.watch("name").substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </div>
+            <PhotoUpload
+              currentPhotoUrl={form.watch("photoUrl")}
+              name={form.watch("name")}
+              color={form.watch("color")}
+              onUploaded={(objectPath) => form.setValue("photoUrl", objectPath)}
+            />
+            <p className="text-xs text-center text-muted-foreground -mt-2">Clique na foto para alterar</p>
             <FormField
               control={form.control}
               name="name"
@@ -171,19 +169,6 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
                       <Input type="color" className="w-12 h-10 p-1" {...field} />
                       <Input type="text" className="flex-1" {...field} />
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="photoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Foto (URL da imagem)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -254,7 +239,7 @@ export default function Team() {
     return acc;
   }, {} as Record<string, typeof members>);
 
-  const createPhotoUrl = form.watch("photoUrl");
+
 
   return (
     <div className="space-y-6">
@@ -274,14 +259,13 @@ export default function Team() {
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <div className="flex justify-center">
-                  <Avatar className="h-16 w-16 border-2" style={{ borderColor: form.watch("color") }}>
-                    <AvatarImage src={createPhotoUrl || undefined} />
-                    <AvatarFallback style={{ backgroundColor: form.watch("color"), color: "#fff", fontSize: "1.2rem" }}>
-                      {form.watch("name").substring(0, 2).toUpperCase() || "?"}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+                <PhotoUpload
+                  currentPhotoUrl={form.watch("photoUrl")}
+                  name={form.watch("name")}
+                  color={form.watch("color")}
+                  onUploaded={(objectPath) => form.setValue("photoUrl", objectPath)}
+                />
+                <p className="text-xs text-center text-muted-foreground -mt-2">Clique para adicionar foto</p>
                 <FormField
                   control={form.control}
                   name="name"
@@ -333,19 +317,6 @@ export default function Team() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="photoUrl"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Foto (URL da imagem)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="https://..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
                 <div className="flex justify-end pt-4">
                   <Button type="submit" disabled={createMember.isPending}>
                     {createMember.isPending ? "Salvando..." : "Salvar"}
@@ -379,7 +350,7 @@ export default function Team() {
                     <div key={member.id} className="flex items-center justify-between group">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10 border-2" style={{ borderColor: member.color }}>
-                          <AvatarImage src={member.photoUrl ?? undefined} alt={member.name} />
+                          <AvatarImage src={photoStorageUrl(member.photoUrl)} alt={member.name} />
                           <AvatarFallback style={{ backgroundColor: member.color, color: "#fff" }}>
                             {member.name.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
