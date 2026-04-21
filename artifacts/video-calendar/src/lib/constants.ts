@@ -10,8 +10,8 @@ export const STATUS_LABELS: Record<VideoStatus, string> = {
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
-  editor: "Editor",
-  captador: "Captador",
+  editor: "Edição",
+  captador: "Captação",
   roteirista: "Roteirista",
   outro: "Outro",
 };

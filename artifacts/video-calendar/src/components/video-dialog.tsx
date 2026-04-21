@@ -350,7 +350,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                 name="editorId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Editor</FormLabel>
+                    <FormLabel>Edição</FormLabel>
                     <Select
                       onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
                       value={field.value ? field.value.toString() : "none"}
@@ -378,7 +378,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
                 name="captadorId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Captador</FormLabel>
+                    <FormLabel>Captação</FormLabel>
                     <Select
                       onValueChange={(val) => field.onChange(val === "none" ? null : parseInt(val))}
                       value={field.value ? field.value.toString() : "none"}

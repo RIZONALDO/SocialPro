@@ -244,7 +244,7 @@ export default function Report() {
           <div className="grid gap-4 md:grid-cols-3">
             <Card>
               <CardHeader>
-                <CardTitle>Editores</CardTitle>
+                <CardTitle>Edição</CardTitle>
               </CardHeader>
               <CardContent>
                 <ContributorList contributors={report.byEditor} />
@@ -252,7 +252,7 @@ export default function Report() {
             </Card>
             <Card>
               <CardHeader>
-                <CardTitle>Captadores</CardTitle>
+                <CardTitle>Captação</CardTitle>
               </CardHeader>
               <CardContent>
                 <ContributorList contributors={report.byCaptador} />

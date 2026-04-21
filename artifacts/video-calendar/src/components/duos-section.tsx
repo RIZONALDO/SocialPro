@@ -93,7 +93,7 @@ function DuoForm({
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label>Captador</Label>
+          <Label>Captação</Label>
           <Select
             value={fields.captadorId || NONE}
             onValueChange={handleCaptadorChange}
@@ -112,7 +112,7 @@ function DuoForm({
           </Select>
         </div>
         <div>
-          <Label>Editor</Label>
+          <Label>Edição</Label>
           <Select
             value={fields.editorId || NONE}
             onValueChange={handleEditorChange}
@@ -374,7 +374,7 @@ export function DuosSection() {
                     className="inline-block h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: d.captador?.color || "#d1d5db" }}
                   />
-                  <span className="text-muted-foreground">Captador:</span>
+                  <span className="text-muted-foreground">Captação:</span>
                   <span className="font-medium">{d.captador?.name || "—"}</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -382,7 +382,7 @@ export function DuosSection() {
                     className="inline-block h-2.5 w-2.5 rounded-full"
                     style={{ backgroundColor: d.editor?.color || "#d1d5db" }}
                   />
-                  <span className="text-muted-foreground">Editor:</span>
+                  <span className="text-muted-foreground">Edição:</span>
                   <span className="font-medium">{d.editor?.name || "—"}</span>
                 </div>
                 <div className="text-muted-foreground pt-1">
