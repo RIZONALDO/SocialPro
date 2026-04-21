@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Copy } from "lucide-react";
 import { useListVideos, getListVideosQueryKey, useDeleteVideo, VideoStatus, Video } from "@workspace/api-client-react";
 import { STATUS_LABELS, STATUS_COLORS } from "@/lib/constants";
 import { useQueryClient } from "@tanstack/react-query";
@@ -42,6 +42,7 @@ export default function VideoList() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [videoToDelete, setVideoToDelete] = useState<number | null>(null);
+  const [duplicateSource, setDuplicateSource] = useState<Video | null>(null);
 
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -66,6 +67,13 @@ export default function VideoList() {
 
   const handleNew = () => {
     setSelectedVideo(null);
+    setDuplicateSource(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleDuplicate = (video: Video) => {
+    setSelectedVideo(null);
+    setDuplicateSource(video);
     setIsDialogOpen(true);
   };
 
@@ -154,7 +162,10 @@ export default function VideoList() {
                   <TableCell>{video.platform || "-"}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleEdit(video)}>
+                      <Button variant="ghost" size="icon" onClick={() => handleDuplicate(video)} title="Duplicar">
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(video)} title="Editar">
                         <Edit2 className="h-4 w-4" />
                       </Button>
                       <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setVideoToDelete(video.id)}>
@@ -171,8 +182,9 @@ export default function VideoList() {
 
       <VideoDialog
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={(o) => { setIsDialogOpen(o); if (!o) setDuplicateSource(null); }}
         video={selectedVideo}
+        duplicateFrom={duplicateSource}
       />
 
       <AlertDialog open={!!videoToDelete} onOpenChange={(o) => !o && setVideoToDelete(null)}>

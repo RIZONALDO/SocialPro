@@ -72,9 +72,10 @@ interface VideoDialogProps {
   onOpenChange: (open: boolean) => void;
   video?: Video | null;
   defaultDate?: Date | null;
+  duplicateFrom?: Video | null;
 }
 
-export function VideoDialog({ open, onOpenChange, video, defaultDate }: VideoDialogProps) {
+export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateFrom }: VideoDialogProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const createVideo = useCreateVideo();
@@ -112,6 +113,19 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate }: VideoDia
           roteiristaId: video.roteiristaId,
           notes: video.notes || "",
         });
+      } else if (duplicateFrom) {
+        form.reset({
+          title: `${duplicateFrom.title} (cópia)`,
+          deliveryDate: new Date(),
+          status: "planejado",
+          client: duplicateFrom.client || "",
+          platform: duplicateFrom.platform || "",
+          durationSeconds: duplicateFrom.durationSeconds,
+          editorId: duplicateFrom.editorId,
+          captadorId: duplicateFrom.captadorId,
+          roteiristaId: duplicateFrom.roteiristaId,
+          notes: duplicateFrom.notes || "",
+        });
       } else {
         form.reset({
           title: "",
@@ -127,7 +141,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate }: VideoDia
         });
       }
     }
-  }, [open, video, defaultDate, form]);
+  }, [open, video, defaultDate, duplicateFrom, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     const payload = {
@@ -177,7 +191,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate }: VideoDia
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{video ? "Editar Vídeo" : "Novo Vídeo"}</DialogTitle>
+          <DialogTitle>{video ? "Editar Vídeo" : duplicateFrom ? "Duplicar Vídeo" : "Novo Vídeo"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
