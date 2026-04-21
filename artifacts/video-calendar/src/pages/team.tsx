@@ -45,7 +45,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { DuosSection } from "@/components/duos-section";
-import { PhotoCropUpload, photoStorageUrl } from "@/components/photo-crop-upload";
+import { PhotoCropUpload } from "@/components/photo-crop-upload";
+import { photoStorageUrl } from "@/lib/photo-storage";
 
 const formSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),

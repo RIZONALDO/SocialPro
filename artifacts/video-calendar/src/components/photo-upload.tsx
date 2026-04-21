@@ -2,18 +2,14 @@ import { useRef } from "react";
 import { useUpload } from "@workspace/object-storage-web";
 import { Camera, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { photoStorageUrl } from "@/lib/photo-storage";
+export { photoStorageUrl } from "@/lib/photo-storage";
 
 interface PhotoUploadProps {
   currentPhotoUrl?: string | null;
   name: string;
   color: string;
   onUploaded: (objectPath: string) => void;
-}
-
-export function photoStorageUrl(objectPath: string | null | undefined): string | undefined {
-  if (!objectPath) return undefined;
-  if (objectPath.startsWith("http")) return objectPath;
-  return `/api/storage${objectPath}`;
 }
 
 export function PhotoUpload({ currentPhotoUrl, name, color, onUploaded }: PhotoUploadProps) {

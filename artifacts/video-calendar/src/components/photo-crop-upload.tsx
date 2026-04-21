@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop } from "react-image-crop";
+import ReactCrop, { type Crop, type PixelCrop, centerCrop, makeAspectCrop, convertToPixelCrop } from "react-image-crop";
 import "react-image-crop/dist/ReactCrop.css";
 import { useUpload } from "@workspace/object-storage-web";
 import { Camera, Loader2, Crop as CropIcon, Check, X } from "lucide-react";
@@ -12,11 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-export function photoStorageUrl(objectPath: string | null | undefined): string | undefined {
-  if (!objectPath) return undefined;
-  if (objectPath.startsWith("http")) return objectPath;
-  return `/api/storage${objectPath}`;
-}
+import { photoStorageUrl } from "@/lib/photo-storage";
 
 interface PhotoCropUploadProps {
   currentPhotoUrl?: string | null;
@@ -34,22 +30,26 @@ function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: numbe
 }
 
 async function cropImageToBlob(image: HTMLImageElement, pixelCrop: PixelCrop): Promise<Blob> {
+  // pixelCrop is in CSS display pixels; drawImage needs natural image pixels
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+
+  const OUTPUT_SIZE = 512;
   const canvas = document.createElement("canvas");
-  const size = Math.min(pixelCrop.width, pixelCrop.height, 512);
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = OUTPUT_SIZE;
+  canvas.height = OUTPUT_SIZE;
   const ctx = canvas.getContext("2d")!;
 
   ctx.drawImage(
     image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
+    pixelCrop.x * scaleX,
+    pixelCrop.y * scaleY,
+    pixelCrop.width * scaleX,
+    pixelCrop.height * scaleY,
     0,
     0,
-    size,
-    size
+    OUTPUT_SIZE,
+    OUTPUT_SIZE
   );
 
   return new Promise((resolve, reject) => {
@@ -92,9 +92,11 @@ export function PhotoCropUpload({ currentPhotoUrl, name, color, onUploaded }: Ph
   };
 
   const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { naturalWidth, naturalHeight } = e.currentTarget;
+    const { naturalWidth, naturalHeight, width, height } = e.currentTarget;
     const initialCrop = centerAspectCrop(naturalWidth, naturalHeight, 1);
     setCrop(initialCrop);
+    // Pre-set completedCrop so the button is enabled right away
+    setCompletedCrop(convertToPixelCrop(initialCrop, width, height));
   }, []);
 
   const handleConfirm = async () => {
@@ -103,10 +105,15 @@ export function PhotoCropUpload({ currentPhotoUrl, name, color, onUploaded }: Ph
     try {
       const blob = await cropImageToBlob(imgRef.current, completedCrop);
       const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
-      await uploadFile(file);
-      setCropOpen(false);
-      URL.revokeObjectURL(srcUrl);
-      setSrcUrl(null);
+      const result = await uploadFile(file);
+      // Only close and revoke if the upload succeeded
+      if (result) {
+        URL.revokeObjectURL(srcUrl);
+        setSrcUrl(null);
+        setCropOpen(false);
+      }
+    } catch {
+      // cropImageToBlob can reject; keep dialog open so user can retry
     } finally {
       setIsProcessing(false);
     }
