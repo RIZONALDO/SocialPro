@@ -62,7 +62,7 @@ export function UserManagement() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("member");
-  const [teamMemberId, setTeamMemberId] = useState<string>("");
+  const [teamMemberId, setTeamMemberId] = useState<string>("none");
   const [creating, setCreating] = useState(false);
 
   const load = useCallback(async () => {
@@ -81,7 +81,7 @@ export function UserManagement() {
       email,
       password,
       role,
-      teamMemberId: teamMemberId ? Number(teamMemberId) : undefined,
+      teamMemberId: teamMemberId && teamMemberId !== "none" ? Number(teamMemberId) : undefined,
     });
     setCreating(false);
     if (err) {
@@ -91,7 +91,7 @@ export function UserManagement() {
       setEmail("");
       setPassword("");
       setRole("member");
-      setTeamMemberId("");
+      setTeamMemberId("none");
       await load();
     }
   };
@@ -207,7 +207,7 @@ export function UserManagement() {
                 <SelectValue placeholder="Vincular a membro..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Nenhum</SelectItem>
+                <SelectItem value="none">Nenhum</SelectItem>
                 {members
                   .filter((m) => !usedMemberIds.has(m.id))
                   .map((m) => (
