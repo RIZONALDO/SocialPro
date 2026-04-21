@@ -6,6 +6,7 @@ export const STATUS_LABELS: Record<VideoStatus, string> = {
   em_edicao: "Em edição",
   entregue: "Entregue",
   publicado: "Publicado",
+  cancelado: "Cancelado",
 };
 
 export const ROLE_LABELS: Record<Role, string> = {
@@ -21,4 +22,5 @@ export const STATUS_COLORS: Record<VideoStatus, string> = {
   em_edicao: "bg-amber-100 text-amber-800 border-amber-200",
   entregue: "bg-emerald-100 text-emerald-800 border-emerald-200",
   publicado: "bg-purple-100 text-purple-800 border-purple-200",
+  cancelado: "bg-red-100 text-red-800 border-red-200",
 };

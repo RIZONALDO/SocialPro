@@ -210,7 +210,7 @@ components:
 
     VideoStatus:
       type: string
-      enum: [planejado, em_producao, em_edicao, entregue, publicado]
+      enum: [planejado, em_producao, em_edicao, entregue, publicado, cancelado]
 
     Video:
       type: object

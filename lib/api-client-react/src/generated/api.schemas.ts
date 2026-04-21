@@ -42,6 +42,7 @@ export const VideoStatus = {
   em_edicao: "em_edicao",
   entregue: "entregue",
   publicado: "publicado",
+  cancelado: "cancelado",
 } as const;
 
 export interface Video {
