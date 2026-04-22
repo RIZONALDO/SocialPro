@@ -11,6 +11,9 @@ const PgStore = connectPgSimple(session);
 
 const app: Express = express();
 
+// Trust the first proxy hop (required in production behind Replit's proxy)
+app.set("trust proxy", 1);
+
 app.use(
   pinoHttp({
     logger,
@@ -48,7 +51,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: false,
+      secure: process.env["NODE_ENV"] === "production",
+      sameSite: process.env["NODE_ENV"] === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     },
   }),
