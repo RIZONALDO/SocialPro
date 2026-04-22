@@ -16,6 +16,13 @@ export const ROLE_LABELS: Record<Role, string> = {
   outro: "Outro",
 };
 
+export const ROLE_LABELS_PLURAL: Record<Role, string> = {
+  editor: "Edições",
+  captador: "Captações",
+  roteirista: "Roteiristas",
+  outro: "Outros",
+};
+
 export const STATUS_COLORS: Record<VideoStatus, string> = {
   planejado: "bg-gray-100 text-gray-800 border-gray-200",
   em_producao: "bg-blue-100 text-blue-800 border-blue-200",

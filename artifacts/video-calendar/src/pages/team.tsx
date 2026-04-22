@@ -14,7 +14,7 @@ import {
   Role,
   type TeamMember,
 } from "@workspace/api-client-react";
-import { ROLE_LABELS } from "@/lib/constants";
+import { ROLE_LABELS, ROLE_LABELS_PLURAL } from "@/lib/constants";
 import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
@@ -348,7 +348,7 @@ export default function Team() {
             return (
               <Card key={roleKey}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{roleLabel}s</CardTitle>
+                  <CardTitle className="text-lg">{ROLE_LABELS_PLURAL[roleKey as Role] ?? roleLabel}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {roleMembers.map(member => (
