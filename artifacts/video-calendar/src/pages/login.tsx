@@ -10,18 +10,17 @@ import { PASSWORD_RULES } from "@/lib/password-validation";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 interface BrandInfo {
-  appName: string;
-  logoUrl: string | null;
+  prosocialIconUrl: string | null;
 }
 
 async function fetchBrand(): Promise<BrandInfo> {
   try {
     const res = await fetch(`${BASE}/api/settings`, { credentials: "include" });
-    if (!res.ok) return { appName: "ProSocial", logoUrl: null };
+    if (!res.ok) return { prosocialIconUrl: null };
     const data = await res.json();
-    return { appName: data.appName ?? "ProSocial", logoUrl: data.logoUrl ?? null };
+    return { prosocialIconUrl: data.prosocialIconUrl ?? null };
   } catch {
-    return { appName: "ProSocial", logoUrl: null };
+    return { prosocialIconUrl: null };
   }
 }
 
@@ -95,17 +94,17 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
     );
   }
 
-  const logoSrc = photoStorageUrl(brand.logoUrl);
+  const prosocialSrc = photoStorageUrl(brand.prosocialIconUrl);
 
   return (
     <div className="flex min-h-screen bg-muted/30">
-      {/* Left panel — branding */}
+      {/* Left panel — ProSocial branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center bg-primary p-12 gap-6">
         <div className="flex flex-col items-center gap-5 text-primary-foreground">
-          {logoSrc ? (
+          {prosocialSrc ? (
             <img
-              src={logoSrc}
-              alt={brand.appName}
+              src={prosocialSrc}
+              alt="ProSocial"
               className="h-32 w-32 object-contain rounded-2xl shadow-2xl"
             />
           ) : (
@@ -114,7 +113,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
             </div>
           )}
           <div className="text-center">
-            <h1 className="text-3xl font-bold tracking-tight">{brand.appName}</h1>
+            <h1 className="text-3xl font-bold tracking-tight">ProSocial</h1>
             <p className="mt-2 text-primary-foreground/70 text-sm">Gestão de produção de vídeos</p>
           </div>
         </div>
@@ -124,10 +123,10 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
       <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
         {/* Mobile logo */}
         <div className="lg:hidden mb-8 flex flex-col items-center gap-3">
-          {logoSrc ? (
+          {prosocialSrc ? (
             <img
-              src={logoSrc}
-              alt={brand.appName}
+              src={prosocialSrc}
+              alt="ProSocial"
               className="h-16 w-16 object-contain rounded-xl shadow-md"
             />
           ) : (
@@ -135,7 +134,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
               <Video className="h-8 w-8 text-primary-foreground" />
             </div>
           )}
-          <span className="font-semibold text-lg">{brand.appName}</span>
+          <span className="font-semibold text-lg">ProSocial</span>
         </div>
 
         <div className="w-full max-w-sm space-y-8">

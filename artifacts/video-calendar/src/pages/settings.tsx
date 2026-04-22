@@ -3,16 +3,26 @@ import { useGetSettings, useUpdateSettings, getGetSettingsQueryKey } from "@work
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpload } from "@workspace/object-storage-web";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Camera, Loader2 } from "lucide-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
 import { UserManagement } from "@/components/user-management";
 
-function LogoUpload({ currentLogoUrl, onUploaded }: { currentLogoUrl?: string | null; onUploaded: (path: string) => void }) {
+function ImageUpload({
+  currentUrl,
+  label,
+  description,
+  onUploaded,
+}: {
+  currentUrl?: string | null;
+  label: string;
+  description: string;
+  onUploaded: (path: string) => void;
+}) {
   const inputRef = useRef<HTMLInputElement>(null);
   const { uploadFile, isUploading } = useUpload({ onSuccess: (r) => onUploaded(r.objectPath) });
 
@@ -23,7 +33,7 @@ function LogoUpload({ currentLogoUrl, onUploaded }: { currentLogoUrl?: string | 
     e.target.value = "";
   };
 
-  const src = photoStorageUrl(currentLogoUrl);
+  const src = photoStorageUrl(currentUrl);
 
   return (
     <div className="flex items-center gap-4">
@@ -32,7 +42,7 @@ function LogoUpload({ currentLogoUrl, onUploaded }: { currentLogoUrl?: string | 
         onClick={() => !isUploading && inputRef.current?.click()}
       >
         {src ? (
-          <img src={src} alt="Logo" className="h-full w-full object-contain p-1" />
+          <img src={src} alt={label} className="h-full w-full object-contain p-1" />
         ) : (
           <Camera className="h-7 w-7 text-muted-foreground/50" />
         )}
@@ -46,15 +56,15 @@ function LogoUpload({ currentLogoUrl, onUploaded }: { currentLogoUrl?: string | 
         <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleChange} disabled={isUploading} />
       </div>
       <div className="text-sm text-muted-foreground space-y-1">
-        <p className="font-medium text-foreground">Logo da produtora</p>
-        <p>Clique para enviar uma imagem do seu computador.</p>
+        <p className="font-medium text-foreground">{label}</p>
+        <p>{description}</p>
         {src && (
           <button
             type="button"
             className="text-destructive hover:underline text-xs"
             onClick={() => onUploaded("")}
           >
-            Remover logo
+            Remover
           </button>
         )}
       </div>
@@ -68,13 +78,17 @@ export default function Settings() {
   const updateSettings = useUpdateSettings();
   const { toast } = useToast();
 
+  const [appName, setAppName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [calendarClientName, setCalendarClientName] = useState("");
+  const [prosocialIconUrl, setProsocialIconUrl] = useState<string | null>(null);
   const [initialized, setInitialized] = useState(false);
 
   if (settings && !initialized) {
+    setAppName(settings.appName ?? "");
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
+    setProsocialIconUrl(settings.prosocialIconUrl ?? null);
     setInitialized(true);
   }
 
@@ -82,8 +96,10 @@ export default function Settings() {
     updateSettings.mutate(
       {
         data: {
+          appName: appName || "Minha Produtora",
           logoUrl: logoUrl || null,
           calendarClientName: calendarClientName || null,
+          prosocialIconUrl: prosocialIconUrl || null,
         },
       },
       {
@@ -103,22 +119,53 @@ export default function Settings() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-        <p className="text-muted-foreground mt-1">Personalize o nome e a identidade visual do seu calendário.</p>
+        <p className="text-muted-foreground mt-1">Personalize a identidade visual do sistema.</p>
       </div>
 
+      {/* ProSocial (app identity) */}
       <Card>
         <CardHeader>
-          <CardTitle>Produtora</CardTitle>
-          <CardDescription>Logo que aparece na tela de login e no topo da barra lateral.</CardDescription>
+          <CardTitle>ProSocial</CardTitle>
+          <CardDescription>
+            Ícone do app que aparece na tela de login e no rodapé da barra lateral. O nome "ProSocial" é fixo.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-5">
-          <LogoUpload
-            currentLogoUrl={logoUrl}
-            onUploaded={(path) => setLogoUrl(path || null)}
+        <CardContent>
+          <ImageUpload
+            currentUrl={prosocialIconUrl}
+            label="Ícone ProSocial"
+            description="Clique para enviar o ícone do app."
+            onUploaded={(path) => setProsocialIconUrl(path || null)}
           />
         </CardContent>
       </Card>
 
+      {/* Produtora (client identity) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Produtora</CardTitle>
+          <CardDescription>Nome e logo da empresa cuja agenda você gerencia. Aparecem no topo da barra lateral.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <ImageUpload
+            currentUrl={logoUrl}
+            label="Logo da produtora"
+            description="Clique para enviar o logo da empresa."
+            onUploaded={(path) => setLogoUrl(path || null)}
+          />
+          <div className="space-y-2">
+            <Label htmlFor="appName">Nome da produtora</Label>
+            <Input
+              id="appName"
+              value={appName}
+              onChange={(e) => setAppName(e.target.value)}
+              placeholder="Minha Produtora"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Calendar */}
       <Card>
         <CardHeader>
           <CardTitle>Calendário</CardTitle>

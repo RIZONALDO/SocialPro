@@ -27,14 +27,15 @@ const ALL_NAV_ITEMS = [
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
-  const appName = settings?.appName ?? "ProSocial";
+  const appName = settings?.appName ?? "Minha Produtora";
   const logoUrl = settings?.logoUrl ?? null;
+  const prosocialIconUrl = settings?.prosocialIconUrl ?? null;
   const { theme, toggle: toggleTheme } = useTheme();
   const { user, logout } = useAuth();
 
   useEffect(() => {
-    document.title = appName;
-  }, [appName]);
+    document.title = "ProSocial";
+  }, []);
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem("sidebar-collapsed");
@@ -46,6 +47,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   }, [collapsed]);
 
   const logoSrc = photoStorageUrl(logoUrl);
+  const prosocialSrc = photoStorageUrl(prosocialIconUrl);
 
   const navItems = ALL_NAV_ITEMS.filter(item =>
     user?.role ? item.roles.includes(user.role) : false
@@ -139,6 +141,18 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             </li>
           </ul>
         </nav>
+
+        {/* ProSocial branding */}
+        <div className={`border-t px-3 py-2 flex items-center gap-2 ${collapsed ? "justify-center" : ""}`}>
+          {prosocialSrc ? (
+            <img src={prosocialSrc} alt="ProSocial" className="h-5 w-5 object-contain rounded flex-shrink-0" />
+          ) : (
+            <Video className="h-4 w-4 text-muted-foreground/40 flex-shrink-0" />
+          )}
+          {!collapsed && (
+            <span className="text-xs text-muted-foreground/50 font-medium tracking-wide">ProSocial</span>
+          )}
+        </div>
 
         {/* Bottom: user info + collapse toggle */}
         <div className="border-t px-2 py-2 space-y-1">

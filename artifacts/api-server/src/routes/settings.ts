@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
-const DEFAULTS = { appName: "ProSocial", logoUrl: null as string | null, calendarClientName: null as string | null };
+const DEFAULTS = { appName: "Minha Produtora", logoUrl: null as string | null, calendarClientName: null as string | null, prosocialIconUrl: null as string | null };
 
 async function getSetting(key: string): Promise<string | null> {
   const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, key));
@@ -26,18 +26,23 @@ router.get("/settings", async (_req, res): Promise<void> => {
   const appName = (await getSetting("appName")) ?? DEFAULTS.appName;
   const logoUrl = await getSetting("logoUrl");
   const calendarClientName = await getSetting("calendarClientName");
-  res.json({ appName, logoUrl, calendarClientName });
+  const prosocialIconUrl = await getSetting("prosocialIconUrl");
+  res.json({ appName, logoUrl, calendarClientName, prosocialIconUrl });
 });
 
 router.put("/settings", async (req, res): Promise<void> => {
-  const { appName, logoUrl, calendarClientName } = req.body as { appName?: string; logoUrl?: string | null; calendarClientName?: string | null };
+  const { appName, logoUrl, calendarClientName, prosocialIconUrl } = req.body as {
+    appName?: string; logoUrl?: string | null; calendarClientName?: string | null; prosocialIconUrl?: string | null;
+  };
   if (appName !== undefined) await setSetting("appName", appName || DEFAULTS.appName);
   if (logoUrl !== undefined) await setSetting("logoUrl", logoUrl || null);
   if (calendarClientName !== undefined) await setSetting("calendarClientName", calendarClientName || null);
+  if (prosocialIconUrl !== undefined) await setSetting("prosocialIconUrl", prosocialIconUrl || null);
   const savedName = (await getSetting("appName")) ?? DEFAULTS.appName;
   const savedLogo = await getSetting("logoUrl");
   const savedClientName = await getSetting("calendarClientName");
-  res.json({ appName: savedName, logoUrl: savedLogo, calendarClientName: savedClientName });
+  const savedProsocialIcon = await getSetting("prosocialIconUrl");
+  res.json({ appName: savedName, logoUrl: savedLogo, calendarClientName: savedClientName, prosocialIconUrl: savedProsocialIcon });
 });
 
 export default router;

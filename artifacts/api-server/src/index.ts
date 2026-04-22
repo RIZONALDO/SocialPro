@@ -24,22 +24,6 @@ async function emergencyAdminPasswordReset() {
   }
 }
 
-/** One-time migration: set appName to "ProSocial" if it was the old default or unset */
-async function migrateAppName() {
-  try {
-    const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, "appName"));
-    if (!row || row.value === "Minha Produtora") {
-      await db
-        .insert(settingsTable)
-        .values({ key: "appName", value: "ProSocial" })
-        .onConflictDoUpdate({ target: settingsTable.key, set: { value: "ProSocial" } });
-      logger.info("App name set to ProSocial");
-    }
-  } catch (err) {
-    logger.warn({ err }, "App name migration skipped");
-  }
-}
-
 /** One-time migration: rename email-format admin usernames to "admin" */
 async function migrateAdminUsername() {
   try {
@@ -89,7 +73,6 @@ if (Number.isNaN(port) || port <= 0) {
 
 emergencyAdminPasswordReset()
   .then(() => migrateAdminUsername())
-  .then(() => migrateAppName())
   .then(() => {
     app.listen(port, (err) => {
       if (err) {

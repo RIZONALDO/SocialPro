@@ -65,6 +65,7 @@ export interface AppSettings {
   appName: string;
   logoUrl?: string | null;
   calendarClientName?: string | null;
+  prosocialIconUrl?: string | null;
 }
 
 export interface Duo {
