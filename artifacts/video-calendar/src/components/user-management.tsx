@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { Trash2, UserPlus, RefreshCw, KeyRound, Pencil } from "lucide-react";
+import { Trash2, UserPlus, RefreshCw, KeyRound, Pencil, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PASSWORD_RULES, isPasswordValid } from "@/lib/password-validation";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -111,6 +112,10 @@ export function UserManagement() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isPasswordValid(password)) {
+      toast({ title: "A senha não atende aos requisitos de segurança", variant: "destructive" });
+      return;
+    }
     setCreating(true);
     const err = await createUser({
       username, password, role,
@@ -151,6 +156,10 @@ export function UserManagement() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetTarget) return;
+    if (!isPasswordValid(resetPassword)) {
+      toast({ title: "A senha não atende aos requisitos de segurança", variant: "destructive" });
+      return;
+    }
     setResetting(true);
     const err = await resetUserPassword(resetTarget.id, resetPassword);
     setResetting(false);
@@ -234,11 +243,26 @@ export function UserManagement() {
               <Label htmlFor="reset-pw">Nova senha</Label>
               <Input id="reset-pw" type="password" value={resetPassword}
                 onChange={e => setResetPassword(e.target.value)}
-                required minLength={6} placeholder="Mínimo 6 caracteres" autoFocus />
+                required autoFocus />
+              {resetPassword.length > 0 && (
+                <ul className="mt-1.5 space-y-1">
+                  {PASSWORD_RULES.map((rule) => {
+                    const ok = rule.test(resetPassword);
+                    return (
+                      <li key={rule.id} className={`flex items-center gap-1.5 text-xs ${ok ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                        {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                        {rule.label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setResetTarget(null)}>Cancelar</Button>
-              <Button type="submit" disabled={resetting}>{resetting ? "Salvando..." : "Redefinir"}</Button>
+              <Button type="submit" disabled={resetting || !isPasswordValid(resetPassword)}>
+                {resetting ? "Salvando..." : "Redefinir"}
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -323,7 +347,20 @@ export function UserManagement() {
             <Label htmlFor="u-password">Senha inicial</Label>
             <Input id="u-password" type="password"
               value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="Mínimo 6 caracteres" required minLength={6} />
+              required />
+            {password.length > 0 && (
+              <ul className="mt-1 space-y-1">
+                {PASSWORD_RULES.map((rule) => {
+                  const ok = rule.test(password);
+                  return (
+                    <li key={rule.id} className={`flex items-center gap-1.5 text-xs ${ok ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                      {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                      {rule.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -354,7 +391,7 @@ export function UserManagement() {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button type="submit" disabled={creating}>{creating ? "Criando..." : "Criar usuário"}</Button>
+          <Button type="submit" disabled={creating || !isPasswordValid(password)}>{creating ? "Criando..." : "Criar usuário"}</Button>
         </div>
       </form>
     </div>

@@ -6,6 +6,14 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
+function validatePasswordStrength(password: string): string | null {
+  if (password.length < 8) return "A senha deve ter pelo menos 8 caracteres";
+  if (!/[A-Z]/.test(password)) return "A senha deve conter pelo menos uma letra maiúscula";
+  if (!/[0-9]/.test(password)) return "A senha deve conter pelo menos um número";
+  if (!/[^A-Za-z0-9]/.test(password)) return "A senha deve conter pelo menos um caractere especial (!@#$%...)";
+  return null;
+}
+
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
@@ -76,9 +84,8 @@ router.post("/auth/change-password", async (req, res) => {
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ error: "Senha atual e nova senha são obrigatórias" });
   }
-  if (newPassword.length < 6) {
-    return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres" });
-  }
+  const pwError = validatePasswordStrength(newPassword);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   const [user] = await db.select().from(usersTable).where(eq(usersTable.id, session.userId));
   if (!user) return res.status(401).json({ error: "Sessão inválida" });
@@ -102,6 +109,8 @@ router.post("/auth/setup", async (req, res) => {
   if (!username || !password) {
     return res.status(400).json({ error: "Usuário e senha são obrigatórios" });
   }
+  const pwError = validatePasswordStrength(password);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   const existing = await db.select().from(usersTable).limit(1);
   const isFirst = existing.length === 0;
@@ -173,9 +182,9 @@ router.post("/users/:id/reset-password", async (req, res) => {
 
   const targetId = Number(req.params.id);
   const { newPassword } = req.body as { newPassword?: string };
-  if (!newPassword || newPassword.length < 6) {
-    return res.status(400).json({ error: "A nova senha deve ter pelo menos 6 caracteres" });
-  }
+  if (!newPassword) return res.status(400).json({ error: "Nova senha é obrigatória" });
+  const pwError = validatePasswordStrength(newPassword);
+  if (pwError) return res.status(400).json({ error: pwError });
 
   const hash = await bcrypt.hash(newPassword, 12);
   await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, targetId));
