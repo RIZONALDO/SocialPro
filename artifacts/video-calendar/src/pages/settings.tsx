@@ -3,10 +3,10 @@ import { useGetSettings, useUpdateSettings, getGetSettingsQueryKey } from "@work
 import { useQueryClient } from "@tanstack/react-query";
 import { useUpload } from "@workspace/object-storage-web";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Camera, Loader2 } from "lucide-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
@@ -68,13 +68,11 @@ export default function Settings() {
   const updateSettings = useUpdateSettings();
   const { toast } = useToast();
 
-  const [appName, setAppName] = useState("");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [calendarClientName, setCalendarClientName] = useState("");
   const [initialized, setInitialized] = useState(false);
 
   if (settings && !initialized) {
-    setAppName(settings.appName ?? "ProSocial");
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
     setInitialized(true);
@@ -84,7 +82,6 @@ export default function Settings() {
     updateSettings.mutate(
       {
         data: {
-          appName: appName || "ProSocial",
           logoUrl: logoUrl || null,
           calendarClientName: calendarClientName || null,
         },
@@ -112,22 +109,13 @@ export default function Settings() {
       <Card>
         <CardHeader>
           <CardTitle>Produtora</CardTitle>
-          <CardDescription>Nome e logo que aparecem no topo da barra lateral.</CardDescription>
+          <CardDescription>Logo que aparece na tela de login e no topo da barra lateral.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <LogoUpload
             currentLogoUrl={logoUrl}
             onUploaded={(path) => setLogoUrl(path || null)}
           />
-          <div className="space-y-2">
-            <Label htmlFor="appName">Nome da produtora</Label>
-            <Input
-              id="appName"
-              value={appName}
-              onChange={(e) => setAppName(e.target.value)}
-              placeholder="ProSocial"
-            />
-          </div>
         </CardContent>
       </Card>
 
