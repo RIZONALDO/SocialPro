@@ -243,6 +243,8 @@ export const ListTeamMembersResponseItem = zod.object({
   role: zod.enum(["editor", "captador", "roteirista", "outro"]),
   color: zod.string().describe("Hex color used in UI"),
   photoUrl: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 export const ListTeamMembersResponse = zod.array(ListTeamMembersResponseItem);
@@ -252,6 +254,8 @@ export const CreateTeamMemberBody = zod.object({
   role: zod.enum(["editor", "captador", "roteirista", "outro"]),
   color: zod.string().optional(),
   photoUrl: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
 });
 
 export const UpdateTeamMemberParams = zod.object({
@@ -263,6 +267,8 @@ export const UpdateTeamMemberBody = zod.object({
   role: zod.enum(["editor", "captador", "roteirista", "outro"]).optional(),
   color: zod.string().optional(),
   photoUrl: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
 });
 
 export const UpdateTeamMemberResponse = zod.object({
@@ -271,6 +277,8 @@ export const UpdateTeamMemberResponse = zod.object({
   role: zod.enum(["editor", "captador", "roteirista", "outro"]),
   color: zod.string().describe("Hex color used in UI"),
   photoUrl: zod.string().nullish(),
+  email: zod.string().nullish(),
+  phone: zod.string().nullish(),
   createdAt: zod.coerce.date(),
 });
 

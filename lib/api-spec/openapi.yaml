@@ -389,6 +389,8 @@ components:
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string, description: "Hex color used in UI" }
         photoUrl: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
         createdAt: { type: string, format: date-time }
       required: [id, name, role, color, createdAt]
 
@@ -399,6 +401,8 @@ components:
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string }
         photoUrl: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
       required: [name, role]
 
     UpdateTeamMemberBody:
@@ -408,6 +412,8 @@ components:
         role: { $ref: "#/components/schemas/Role" }
         color: { type: string }
         photoUrl: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        phone: { type: string, nullable: true }
 
     AppSettings:
       type: object

@@ -14,5 +14,7 @@ export interface TeamMember {
   /** Hex color used in UI */
   color: string;
   photoUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
   createdAt: Date;
 }

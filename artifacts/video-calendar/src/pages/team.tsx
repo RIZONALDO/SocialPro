@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, Mail, Phone } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,7 +20,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Form,
@@ -53,7 +52,130 @@ const formSchema = z.object({
   role: z.nativeEnum(Role),
   color: z.string().min(1, "Cor é obrigatória"),
   photoUrl: z.string().optional(),
+  email: z.string().email("E-mail inválido").optional().or(z.literal("")),
+  phone: z.string().optional(),
 });
+
+type FormValues = z.infer<typeof formSchema>;
+
+function MemberForm({
+  defaultValues,
+  onSubmit,
+  isPending,
+}: {
+  defaultValues: FormValues;
+  onSubmit: (values: FormValues) => void;
+  isPending: boolean;
+}) {
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  });
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <PhotoCropUpload
+          currentPhotoUrl={form.watch("photoUrl")}
+          name={form.watch("name")}
+          color={form.watch("color")}
+          onUploaded={(objectPath) =>
+            form.setValue("photoUrl", objectPath, { shouldDirty: true, shouldValidate: true })
+          }
+        />
+        <p className="text-xs text-center text-muted-foreground -mt-2">Clique na foto para alterar</p>
+
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nome</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: João Silva" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Função</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {Object.entries(ROLE_LABELS).map(([val, label]) => (
+                    <SelectItem key={val} value={val}>{label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>E-mail <span className="text-muted-foreground font-normal">(opcional)</span></FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="joao@exemplo.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Telefone <span className="text-muted-foreground font-normal">(opcional)</span></FormLabel>
+              <FormControl>
+                <Input type="tel" placeholder="(11) 99999-9999" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="color"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cor (UI)</FormLabel>
+              <FormControl>
+                <div className="flex gap-2">
+                  <Input type="color" className="w-12 h-10 p-1" {...field} />
+                  <Input type="text" className="flex-1" {...field} />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={isPending}>
+            {isPending ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
 
 function EditMemberDialog({ member }: { member: TeamMember }) {
   const [open, setOpen] = useState(false);
@@ -61,29 +183,16 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
   const { toast } = useToast();
   const updateMember = useUpdateTeamMember();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: member.name,
-      role: member.role as Role,
-      color: member.color,
-      photoUrl: member.photoUrl ?? "",
-    },
-  });
-
-  const handleOpen = (o: boolean) => {
-    if (o) {
-      form.reset({
-        name: member.name,
-        role: member.role as Role,
-        color: member.color,
-        photoUrl: member.photoUrl ?? "",
-      });
-    }
-    setOpen(o);
+  const defaultValues: FormValues = {
+    name: member.name,
+    role: member.role as Role,
+    color: member.color,
+    photoUrl: member.photoUrl ?? "",
+    email: member.email ?? "",
+    phone: member.phone ?? "",
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: FormValues) => {
     updateMember.mutate(
       {
         id: member.id,
@@ -92,6 +201,8 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
           role: values.role,
           color: values.color,
           photoUrl: values.photoUrl || null,
+          email: values.email || null,
+          phone: values.phone || null,
         },
       },
       {
@@ -105,7 +216,7 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleOpen}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="icon" title="Editar membro">
           <Pencil className="h-4 w-4" />
@@ -115,75 +226,12 @@ function EditMemberDialog({ member }: { member: TeamMember }) {
         <DialogHeader>
           <DialogTitle>Editar Membro</DialogTitle>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <PhotoCropUpload
-              currentPhotoUrl={form.watch("photoUrl")}
-              name={form.watch("name")}
-              color={form.watch("color")}
-              onUploaded={(objectPath) =>
-                form.setValue("photoUrl", objectPath, { shouldDirty: true, shouldValidate: true })
-              }
-            />
-            <p className="text-xs text-center text-muted-foreground -mt-2">Clique na foto para alterar</p>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: João Silva" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Função</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(ROLE_LABELS).map(([val, label]) => (
-                        <SelectItem key={val} value={val}>{label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Cor (UI)</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-2">
-                      <Input type="color" className="w-12 h-10 p-1" {...field} />
-                      <Input type="text" className="flex-1" {...field} />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={updateMember.isPending}>
-                {updateMember.isPending ? "Salvando..." : "Salvar"}
-              </Button>
-            </div>
-          </form>
-        </Form>
+        <MemberForm
+          key={open ? member.id : `${member.id}-closed`}
+          defaultValues={defaultValues}
+          onSubmit={onSubmit}
+          isPending={updateMember.isPending}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -201,25 +249,30 @@ export default function Team() {
   const createMember = useCreateTeamMember();
   const deleteMember = useDeleteTeamMember();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      role: "editor" as Role,
-      color: "#3b82f6",
-      photoUrl: "",
-    },
-  });
+  const defaultCreateValues: FormValues = {
+    name: "",
+    role: "editor" as Role,
+    color: "#3b82f6",
+    photoUrl: "",
+    email: "",
+    phone: "",
+  };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: FormValues) => {
     createMember.mutate(
-      { data: { ...values, photoUrl: values.photoUrl || null } },
+      {
+        data: {
+          ...values,
+          photoUrl: values.photoUrl || null,
+          email: values.email || null,
+          phone: values.phone || null,
+        }
+      },
       {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: getListTeamMembersQueryKey() });
           toast({ title: "Membro da equipe adicionado" });
           setIsDialogOpen(false);
-          form.reset();
         }
       }
     );
@@ -242,8 +295,6 @@ export default function Team() {
     return acc;
   }, {} as Record<string, typeof members>);
 
-
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -260,75 +311,11 @@ export default function Team() {
             <DialogHeader>
               <DialogTitle>Adicionar Membro</DialogTitle>
             </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <PhotoCropUpload
-                  currentPhotoUrl={form.watch("photoUrl")}
-                  name={form.watch("name")}
-                  color={form.watch("color")}
-                  onUploaded={(objectPath) =>
-                    form.setValue("photoUrl", objectPath, { shouldDirty: true, shouldValidate: true })
-                  }
-                />
-                <p className="text-xs text-center text-muted-foreground -mt-2">Clique para adicionar foto</p>
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nome</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: João Silva" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Função</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Object.entries(ROLE_LABELS).map(([val, label]) => (
-                            <SelectItem key={val} value={val}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="color"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Cor (UI)</FormLabel>
-                      <FormControl>
-                        <div className="flex gap-2">
-                          <Input type="color" className="w-12 h-10 p-1" {...field} />
-                          <Input type="text" className="flex-1" {...field} />
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex justify-end pt-4">
-                  <Button type="submit" disabled={createMember.isPending}>
-                    {createMember.isPending ? "Salvando..." : "Salvar"}
-                  </Button>
-                </div>
-              </form>
-            </Form>
+            <MemberForm
+              defaultValues={defaultCreateValues}
+              onSubmit={onSubmit}
+              isPending={createMember.isPending}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -352,19 +339,31 @@ export default function Team() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {roleMembers.map(member => (
-                    <div key={member.id} className="flex items-center justify-between group">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-10 w-10 border-2" style={{ borderColor: member.color }}>
+                    <div key={member.id} className="flex items-start justify-between group">
+                      <div className="flex items-start gap-3 min-w-0">
+                        <Avatar className="h-10 w-10 border-2 flex-shrink-0 mt-0.5" style={{ borderColor: member.color }}>
                           <AvatarImage src={photoStorageUrl(member.photoUrl)} alt={member.name} />
                           <AvatarFallback style={{ backgroundColor: member.color, color: "#fff" }}>
                             {member.name.substring(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
+                        <div className="min-w-0 space-y-0.5">
                           <p className="font-medium leading-none">{member.name}</p>
+                          {member.email && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Mail className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{member.email}</span>
+                            </div>
+                          )}
+                          {member.phone && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3 flex-shrink-0" />
+                              <span>{member.phone}</span>
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0 ml-2">
                         <EditMemberDialog member={member} />
                         <Button
                           variant="ghost"

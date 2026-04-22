@@ -13,4 +13,6 @@ export interface CreateTeamMemberBody {
   role: Role;
   color?: string;
   photoUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }

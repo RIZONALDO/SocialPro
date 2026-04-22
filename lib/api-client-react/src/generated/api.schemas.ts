@@ -43,6 +43,8 @@ export interface TeamMember {
   /** Hex color used in UI */
   color: string;
   photoUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
   createdAt: string;
 }
 
@@ -52,6 +54,8 @@ export interface CreateTeamMemberBody {
   role: Role;
   color?: string;
   photoUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface UpdateTeamMemberBody {
@@ -59,6 +63,8 @@ export interface UpdateTeamMemberBody {
   role?: Role;
   color?: string;
   photoUrl?: string | null;
+  email?: string | null;
+  phone?: string | null;
 }
 
 export interface AppSettings {

@@ -34,7 +34,7 @@ router.post("/team-members", async (req, res): Promise<void> => {
   const color = data.color ?? PALETTE[Math.floor(Math.random() * PALETTE.length)]!;
   const [row] = await db
     .insert(teamMembersTable)
-    .values({ name: data.name, role: data.role, color, photoUrl: data.photoUrl ?? null })
+    .values({ name: data.name, role: data.role, color, photoUrl: data.photoUrl ?? null, email: data.email ?? null, phone: data.phone ?? null })
     .returning();
   res.status(201).json(row);
 });
@@ -56,6 +56,8 @@ router.patch("/team-members/:id", async (req, res): Promise<void> => {
   if (d.role !== undefined) update.role = d.role;
   if (d.color !== undefined) update.color = d.color;
   if ("photoUrl" in d) update.photoUrl = d.photoUrl ?? null;
+  if ("email" in d) update.email = d.email ?? null;
+  if ("phone" in d) update.phone = d.phone ?? null;
   const [row] = await db
     .update(teamMembersTable)
     .set(update)
