@@ -67,11 +67,17 @@ export interface UpdateTeamMemberBody {
   phone?: string | null;
 }
 
+export interface NavPermissions {
+  operator: string[];
+  member: string[];
+}
+
 export interface AppSettings {
   appName: string;
   logoUrl?: string | null;
   calendarClientName?: string | null;
   prosocialIconUrl?: string | null;
+  navPermissions?: NavPermissions | null;
 }
 
 export interface Duo {

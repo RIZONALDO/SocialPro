@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
   CalendarDays, LayoutDashboard, Video, Users, FileBarChart,
-  Settings, Crown, Sun, Moon, PanelLeftClose, PanelLeftOpen, LogOut,
+  Settings, Crown, Sun, Moon, LogOut, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { photoStorageUrl } from "@/components/photo-upload";
@@ -13,16 +13,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChangePasswordDialog, ForcedChangePasswordDialog } from "@/components/change-password-dialog";
 
-// roles: which roles can see this item (undefined = all authenticated users)
-const ALL_NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "operator"] },
-  { href: "/calendar", label: "Calendário", icon: CalendarDays, roles: ["admin", "operator"] },
-  { href: "/videos", label: "Vídeos", icon: Video, roles: ["admin", "operator"] },
-  { href: "/team", label: "Equipe", icon: Users, roles: ["admin"] },
-  { href: "/report", label: "Relatório", icon: FileBarChart, roles: ["admin"] },
-  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown, roles: ["admin", "member"] },
-  { href: "/settings", label: "Configurações", icon: Settings, roles: ["admin"] },
+export const ALL_NAV_ITEMS = [
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/calendar", label: "Calendário", icon: CalendarDays },
+  { href: "/videos", label: "Vídeos", icon: Video },
+  { href: "/team", label: "Equipe", icon: Users },
+  { href: "/report", label: "Relatório", icon: FileBarChart },
+  { href: "/corrida-bonus", label: "Corrida do Bônus", icon: Crown },
+  { href: "/settings", label: "Configurações", icon: Settings },
 ];
+
+const ADMIN_HREFS = ALL_NAV_ITEMS.map(i => i.href);
+
+const DEFAULT_PERMISSIONS = {
+  operator: ["/", "/calendar", "/videos"],
+  member: ["/corrida-bonus"],
+};
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -30,6 +36,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const appName = settings?.appName ?? "Minha Produtora";
   const logoUrl = settings?.logoUrl ?? null;
   const prosocialIconUrl = settings?.prosocialIconUrl ?? null;
+  const navPermissions = settings?.navPermissions ?? DEFAULT_PERMISSIONS;
   const { theme, toggle: toggleTheme } = useTheme();
   const { user, logout, refreshUser } = useAuth();
 
@@ -49,9 +56,16 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const logoSrc = photoStorageUrl(logoUrl);
   const prosocialSrc = photoStorageUrl(prosocialIconUrl);
 
-  const navItems = ALL_NAV_ITEMS.filter(item =>
-    user?.role ? item.roles.includes(user.role) : false
-  );
+  const allowedHrefs: string[] =
+    user?.role === "admin"
+      ? ADMIN_HREFS
+      : user?.role === "operator"
+      ? navPermissions.operator ?? DEFAULT_PERMISSIONS.operator
+      : user?.role === "member"
+      ? navPermissions.member ?? DEFAULT_PERMISSIONS.member
+      : [];
+
+  const navItems = ALL_NAV_ITEMS.filter(item => allowedHrefs.includes(item.href));
 
   const LogoIcon = ({ size = "sm" }: { size?: "sm" | "lg" }) =>
     logoSrc ? (
@@ -75,7 +89,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
         {/* Logo row */}
         <div className={`flex items-center border-b overflow-hidden transition-all duration-200 ${collapsed ? "h-16 px-2 justify-center" : "h-20 px-4 gap-3"}`}>
           <Link
-            href={user?.role === "admin" ? "/" : "/corrida-bonus"}
+            href={user?.role === "admin" || user?.role === "operator" ? "/" : "/corrida-bonus"}
             className={`flex min-w-0 flex-1 overflow-hidden ${collapsed ? "justify-center" : "items-center gap-3"}`}
           >
             <LogoIcon size={collapsed ? "sm" : "lg"} />
@@ -114,31 +128,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </li>
               );
             })}
-
-            {/* Divider + Toggle button */}
-            <li className="mt-3 pt-3 border-t border-border">
-              {collapsed ? (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => setCollapsed(false)}
-                      className="flex w-full items-center justify-center rounded-lg px-2 py-2 text-sm transition-all text-muted-foreground hover:bg-muted hover:text-foreground"
-                    >
-                      <PanelLeftOpen className="h-4 w-4 flex-shrink-0" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Expandir menu</TooltipContent>
-                </Tooltip>
-              ) : (
-                <button
-                  onClick={() => setCollapsed(true)}
-                  className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-sm transition-all text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  <PanelLeftClose className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate">Recolher menu</span>
-                </button>
-              )}
-            </li>
           </ul>
         </nav>
 
@@ -154,7 +143,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           )}
         </div>
 
-        {/* Bottom: user info + collapse toggle */}
+        {/* Bottom: user info + actions */}
         <div className="border-t px-2 py-2 space-y-1">
           {user && (
             <div className={`flex items-center gap-2 px-2 py-1 ${collapsed ? "justify-center" : ""}`}>
@@ -174,31 +163,73 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
               )}
             </div>
           )}
-          <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "justify-start gap-1"} items-center`}>
+
+          <div className={`flex ${collapsed ? "flex-col items-center gap-1" : "gap-1"} items-center`}>
+            {/* Change password */}
             {collapsed ? (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive">
-                      <LogOut className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Sair</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span><ChangePasswordDialog collapsed /></span>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">Trocar senha</TooltipContent>
-                </Tooltip>
-              </>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span><ChangePasswordDialog collapsed /></span>
+                </TooltipTrigger>
+                <TooltipContent side="right">Trocar senha</TooltipContent>
+              </Tooltip>
             ) : (
-              <>
-                <Button variant="ghost" size="icon" onClick={logout} className="text-muted-foreground hover:text-destructive" title="Sair">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-                <ChangePasswordDialog />
-              </>
+              <ChangePasswordDialog />
+            )}
+
+            {/* Logout */}
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={logout}
+                    className="text-destructive/70 hover:text-destructive hover:bg-destructive/10"
+                    title="Sair"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Sair</TooltipContent>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={logout}
+                className="flex-1 justify-start gap-2 text-destructive/70 hover:text-destructive hover:bg-destructive/10 font-medium"
+                title="Sair"
+              >
+                <LogOut className="h-4 w-4 flex-shrink-0" />
+                <span>Sair</span>
+              </Button>
+            )}
+          </div>
+
+          {/* Collapse / expand toggle */}
+          <div className={`pt-1 ${collapsed ? "flex justify-center" : ""}`}>
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => setCollapsed(false)}
+                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
+                    aria-label="Expandir menu"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right">Expandir menu</TooltipContent>
+              </Tooltip>
+            ) : (
+              <button
+                onClick={() => setCollapsed(true)}
+                className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                aria-label="Recolher menu"
+              >
+                <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                <span>Recolher menu</span>
+              </button>
             )}
           </div>
         </div>
@@ -207,14 +238,12 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       {/* Main content */}
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-4 w-full flex-1 min-w-0">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          {/* Mobile logo */}
           <div className="flex h-14 items-center sm:hidden">
             <Link href="/" className="flex items-center gap-2 font-semibold">
               <LogoIcon size="sm" />
               <span className="truncate">{appName}</span>
             </Link>
           </div>
-
           <div className="ml-auto flex items-center gap-1">
             <Button
               variant="ghost"

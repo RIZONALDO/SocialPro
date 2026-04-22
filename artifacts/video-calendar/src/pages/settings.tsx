@@ -7,10 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Camera, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Camera, Loader2, Check } from "lucide-react";
 import { photoStorageUrl } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
 import { UserManagement } from "@/components/user-management";
+import { ALL_NAV_ITEMS } from "@/components/layout";
+
+const DEFAULT_NAV_PERMISSIONS = {
+  operator: ["/", "/calendar", "/videos"],
+  member: ["/corrida-bonus"],
+};
 
 function ImageUpload({
   currentUrl,
@@ -82,6 +89,7 @@ export default function Settings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [calendarClientName, setCalendarClientName] = useState("");
   const [prosocialIconUrl, setProsocialIconUrl] = useState<string | null>(null);
+  const [navPermissions, setNavPermissions] = useState<{ operator: string[]; member: string[] }>(DEFAULT_NAV_PERMISSIONS);
   const [initialized, setInitialized] = useState(false);
 
   if (settings && !initialized) {
@@ -89,8 +97,19 @@ export default function Settings() {
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
     setProsocialIconUrl(settings.prosocialIconUrl ?? null);
+    setNavPermissions(settings.navPermissions ?? DEFAULT_NAV_PERMISSIONS);
     setInitialized(true);
   }
+
+  const togglePermission = (role: "operator" | "member", href: string) => {
+    setNavPermissions(prev => {
+      const current = prev[role];
+      const next = current.includes(href)
+        ? current.filter(h => h !== href)
+        : [...current, href];
+      return { ...prev, [role]: next };
+    });
+  };
 
   const save = () => {
     updateSettings.mutate(
@@ -100,6 +119,7 @@ export default function Settings() {
           logoUrl: logoUrl || null,
           calendarClientName: calendarClientName || null,
           prosocialIconUrl: prosocialIconUrl || null,
+          navPermissions,
         },
       },
       {
@@ -195,6 +215,68 @@ export default function Settings() {
         </CardContent>
       </Card>
 
+      {/* Nav Permissions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Perfis de acesso ao menu</CardTitle>
+          <CardDescription>
+            Defina quais itens do menu cada perfil pode visualizar. Admin sempre tem acesso completo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b">
+                  <th className="text-left py-2 pr-4 font-medium text-muted-foreground w-full">Item do menu</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Admin</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Operador</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Membro</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ALL_NAV_ITEMS.map((item) => (
+                  <tr key={item.href} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center gap-2">
+                        <item.icon className="h-4 w-4 text-muted-foreground" />
+                        <span>{item.label}</span>
+                      </div>
+                    </td>
+                    {/* Admin — always checked, read-only */}
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex justify-center">
+                        <div className="h-5 w-5 rounded border-2 border-primary bg-primary flex items-center justify-center opacity-60">
+                          <Check className="h-3 w-3 text-primary-foreground" />
+                        </div>
+                      </div>
+                    </td>
+                    {/* Operator */}
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex justify-center">
+                        <Checkbox
+                          checked={navPermissions.operator.includes(item.href)}
+                          onCheckedChange={() => togglePermission("operator", item.href)}
+                        />
+                      </div>
+                    </td>
+                    {/* Member */}
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex justify-center">
+                        <Checkbox
+                          checked={navPermissions.member.includes(item.href)}
+                          onCheckedChange={() => togglePermission("member", item.href)}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+
       <Separator />
 
       <div className="flex justify-end">
@@ -207,7 +289,7 @@ export default function Settings() {
         <CardHeader>
           <CardTitle>Usuários</CardTitle>
           <CardDescription>
-            Gerencie quem tem acesso ao sistema. Membros da equipe só visualizam a Corrida do Bônus.
+            Gerencie quem tem acesso ao sistema.
           </CardDescription>
         </CardHeader>
         <CardContent>
