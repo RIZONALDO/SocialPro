@@ -128,6 +128,35 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 </li>
               );
             })}
+
+            {/* Separator + Collapse toggle — always after last nav item */}
+            <li className="mt-2 pt-2 border-t border-border">
+              {collapsed ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setCollapsed(false)}
+                      className="flex items-center justify-center w-full py-1"
+                      aria-label="Expandir menu"
+                    >
+                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-all">
+                        <ChevronRight className="h-4 w-4" />
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">Expandir menu</TooltipContent>
+                </Tooltip>
+              ) : (
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-all bg-primary/10 text-primary hover:bg-primary/20"
+                  aria-label="Recolher menu"
+                >
+                  <ChevronLeft className="h-4 w-4 flex-shrink-0" />
+                  <span>Recolher menu</span>
+                </button>
+              )}
+            </li>
           </ul>
         </nav>
 
@@ -206,32 +235,6 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* Collapse / expand toggle */}
-          <div className={`pt-1 ${collapsed ? "flex justify-center" : ""}`}>
-            {collapsed ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => setCollapsed(false)}
-                    className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-all"
-                    aria-label="Expandir menu"
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right">Expandir menu</TooltipContent>
-              </Tooltip>
-            ) : (
-              <button
-                onClick={() => setCollapsed(true)}
-                className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm font-medium transition-all bg-primary/10 text-primary hover:bg-primary/20"
-                aria-label="Recolher menu"
-              >
-                <ChevronLeft className="h-4 w-4 flex-shrink-0" />
-                <span>Recolher menu</span>
-              </button>
-            )}
-          </div>
         </div>
       </aside>
 
