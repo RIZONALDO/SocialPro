@@ -9,6 +9,7 @@ export interface AuthUser {
   teamMemberId: number | null;
   name: string | null;
   photoUrl: string | null;
+  mustChangePassword: boolean;
 }
 
 interface AuthContextValue {
@@ -16,6 +17,7 @@ interface AuthContextValue {
   loading: boolean;
   login: (username: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -23,6 +25,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   login: async () => "Não autenticado",
   logout: async () => {},
+  refreshUser: async () => {},
 });
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -80,7 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser: fetchMe }}>
       {children}
     </AuthContext.Provider>
   );

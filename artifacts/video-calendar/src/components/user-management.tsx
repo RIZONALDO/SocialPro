@@ -11,6 +11,7 @@ import {
 import { Trash2, UserPlus, RefreshCw, KeyRound, Pencil, Check, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PASSWORD_RULES, isPasswordValid } from "@/lib/password-validation";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -241,7 +242,7 @@ export function UserManagement() {
           <form onSubmit={handleResetPassword} className="space-y-4 pt-2">
             <div className="space-y-1.5">
               <Label htmlFor="reset-pw">Nova senha</Label>
-              <Input id="reset-pw" type="password" value={resetPassword}
+              <PasswordInput id="reset-pw" value={resetPassword}
                 onChange={e => setResetPassword(e.target.value)}
                 required autoFocus />
               {resetPassword.length > 0 && (
@@ -345,7 +346,7 @@ export function UserManagement() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="u-password">Senha inicial</Label>
-            <Input id="u-password" type="password"
+            <PasswordInput id="u-password"
               value={password} onChange={e => setPassword(e.target.value)}
               required />
             {password.length > 0 && (

@@ -41,7 +41,7 @@ router.get("/auth/me", async (req, res) => {
     name = member?.name ?? null;
     photoUrl = member?.photoUrl ?? null;
   }
-  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl, mustChangePassword: user.mustChangePassword ?? false });
 });
 
 // POST /api/auth/login
@@ -66,7 +66,7 @@ router.post("/auth/login", loginLimiter, async (req, res) => {
     name = member?.name ?? null;
     photoUrl = member?.photoUrl ?? null;
   }
-  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl });
+  return res.json({ id: user.id, username: user.username, role: user.role, teamMemberId: user.teamMemberId, name, photoUrl, mustChangePassword: user.mustChangePassword ?? false });
 });
 
 // POST /api/auth/logout
@@ -94,7 +94,7 @@ router.post("/auth/change-password", async (req, res) => {
   if (!valid) return res.status(400).json({ error: "Senha atual incorreta" });
 
   const hash = await bcrypt.hash(newPassword, 12);
-  await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, session.userId));
+  await db.update(usersTable).set({ passwordHash: hash, mustChangePassword: false }).where(eq(usersTable.id, session.userId));
   return res.json({ ok: true });
 });
 
@@ -137,6 +137,7 @@ router.post("/auth/setup", async (req, res) => {
       passwordHash: hash,
       role: isFirst ? "admin" : (role === "admin" ? "admin" : role === "operator" ? "operator" : "member"),
       teamMemberId: teamMemberId ?? null,
+      mustChangePassword: !isFirst,
     })
     .returning();
 
@@ -187,7 +188,7 @@ router.post("/users/:id/reset-password", async (req, res) => {
   if (pwError) return res.status(400).json({ error: pwError });
 
   const hash = await bcrypt.hash(newPassword, 12);
-  await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, targetId));
+  await db.update(usersTable).set({ passwordHash: hash, mustChangePassword: true }).where(eq(usersTable.id, targetId));
   return res.json({ ok: true });
 });
 

@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChangePasswordDialog } from "@/components/change-password-dialog";
+import { ChangePasswordDialog, ForcedChangePasswordDialog } from "@/components/change-password-dialog";
 
 // roles: which roles can see this item (undefined = all authenticated users)
 const ALL_NAV_ITEMS = [
@@ -31,7 +31,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const logoUrl = settings?.logoUrl ?? null;
   const prosocialIconUrl = settings?.prosocialIconUrl ?? null;
   const { theme, toggle: toggleTheme } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
 
   useEffect(() => {
     document.title = "ProSocial";
@@ -231,6 +231,10 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+
+      {user?.mustChangePassword && (
+        <ForcedChangePasswordDialog onDone={refreshUser} />
+      )}
     </div>
   );
 }
