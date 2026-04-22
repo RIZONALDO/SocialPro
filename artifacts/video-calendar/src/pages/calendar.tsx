@@ -102,15 +102,15 @@ export default function CalendarPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-px rounded-lg bg-border border overflow-hidden">
+      <div className="grid grid-cols-7 gap-1.5">
         {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((dayName) => (
-          <div key={dayName} className="bg-muted py-2 text-center text-sm font-semibold text-muted-foreground">
+          <div key={dayName} className="bg-muted rounded-lg py-2 text-center text-sm font-semibold text-muted-foreground">
             {dayName}
           </div>
         ))}
         
         {Array.from({ length: monthStart.getDay() }).map((_, index) => (
-          <div key={`empty-${index}`} className="bg-background min-h-[120px] p-2 opacity-50" />
+          <div key={`empty-${index}`} className="bg-muted/30 rounded-lg min-h-[120px] p-2" />
         ))}
         
         {days.map((day) => {
@@ -119,8 +119,8 @@ export default function CalendarPage() {
             <div
               key={day.toISOString()}
               onClick={() => handleDayClick(day)}
-              className={`bg-background min-h-[120px] p-2 cursor-pointer transition-colors hover:bg-muted/50 ${
-                isToday(day) ? "ring-2 ring-primary ring-inset" : ""
+              className={`bg-card border rounded-lg min-h-[120px] p-2 cursor-pointer transition-colors hover:bg-muted/50 ${
+                isToday(day) ? "ring-2 ring-primary" : ""
               }`}
             >
               <div className={`text-sm font-medium ${isToday(day) ? "text-primary" : ""}`}>
@@ -143,7 +143,7 @@ export default function CalendarPage() {
         })}
         
         {Array.from({ length: 6 - monthEnd.getDay() }).map((_, index) => (
-          <div key={`empty-end-${index}`} className="bg-background min-h-[120px] p-2 opacity-50" />
+          <div key={`empty-end-${index}`} className="bg-muted/30 rounded-lg min-h-[120px] p-2" />
         ))}
       </div>
 
