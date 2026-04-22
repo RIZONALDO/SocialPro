@@ -73,6 +73,7 @@ const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
   operator: "Operador",
   member: "Membro",
+  creator: "Creator",
 };
 
 export function UserManagement() {
@@ -206,6 +207,7 @@ export function UserManagement() {
                   <SelectItem value="admin">Administrador (acesso total)</SelectItem>
                   <SelectItem value="operator">Operador (cadastra vídeos)</SelectItem>
                   <SelectItem value="member">Membro (só Corrida do Bônus)</SelectItem>
+                  <SelectItem value="creator">Creator (só Corrida do Bônus)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -373,6 +375,7 @@ export function UserManagement() {
                 <SelectItem value="admin">Administrador (acesso total)</SelectItem>
                 <SelectItem value="operator">Operador (cadastra vídeos)</SelectItem>
                 <SelectItem value="member">Membro (só Corrida do Bônus)</SelectItem>
+                <SelectItem value="creator">Creator (só Corrida do Bônus)</SelectItem>
               </SelectContent>
             </Select>
           </div>

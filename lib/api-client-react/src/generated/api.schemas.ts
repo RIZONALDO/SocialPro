@@ -70,6 +70,7 @@ export interface UpdateTeamMemberBody {
 export interface NavPermissions {
   operator: string[];
   member: string[];
+  creator: string[];
 }
 
 export interface AppSettings {

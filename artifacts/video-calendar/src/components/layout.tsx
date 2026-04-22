@@ -28,6 +28,7 @@ const ADMIN_HREFS = ALL_NAV_ITEMS.map(i => i.href);
 const DEFAULT_PERMISSIONS = {
   operator: ["/", "/calendar", "/videos"],
   member: ["/corrida-bonus"],
+  creator: ["/corrida-bonus"],
 };
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
@@ -63,6 +64,8 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
       ? navPermissions.operator ?? DEFAULT_PERMISSIONS.operator
       : user?.role === "member"
       ? navPermissions.member ?? DEFAULT_PERMISSIONS.member
+      : user?.role === "creator"
+      ? navPermissions.creator ?? DEFAULT_PERMISSIONS.creator
       : [];
 
   const navItems = ALL_NAV_ITEMS.filter(item => allowedHrefs.includes(item.href));
@@ -186,7 +189,7 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
                 <div className="min-w-0">
                   <p className="text-xs font-medium truncate">{user.name ?? user.username}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : "Membro"}
+                    {user.role === "admin" ? "Administrador" : user.role === "operator" ? "Operador" : user.role === "creator" ? "Creator" : "Membro"}
                   </p>
                 </div>
               )}

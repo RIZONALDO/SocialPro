@@ -135,7 +135,7 @@ router.post("/auth/setup", async (req, res) => {
     .values({
       username: username.toLowerCase().trim(),
       passwordHash: hash,
-      role: isFirst ? "admin" : (role === "admin" ? "admin" : role === "operator" ? "operator" : "member"),
+      role: isFirst ? "admin" : (role === "admin" ? "admin" : role === "operator" ? "operator" : role === "creator" ? "creator" : "member"),
       teamMemberId: teamMemberId ?? null,
       mustChangePassword: !isFirst,
     })
@@ -212,7 +212,7 @@ router.put("/users/:id", async (req, res) => {
 
   const updates: Record<string, unknown> = {};
   if (role !== undefined) {
-    updates.role = role === "admin" ? "admin" : role === "operator" ? "operator" : "member";
+    updates.role = role === "admin" ? "admin" : role === "operator" ? "operator" : role === "creator" ? "creator" : "member";
   }
   if (teamMemberId !== undefined) {
     updates.teamMemberId = teamMemberId ?? null;

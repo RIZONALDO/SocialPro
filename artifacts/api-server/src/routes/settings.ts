@@ -7,6 +7,7 @@ const router: IRouter = Router();
 const DEFAULT_NAV_PERMISSIONS = {
   operator: ["/", "/calendar", "/videos"],
   member: ["/corrida-bonus"],
+  creator: ["/corrida-bonus"],
 };
 
 const DEFAULTS = { appName: "Minha Produtora", logoUrl: null as string | null, calendarClientName: null as string | null, prosocialIconUrl: null as string | null };
@@ -30,7 +31,14 @@ async function setSetting(key: string, value: string | null): Promise<void> {
 async function getNavPermissions() {
   const raw = await getSetting("navPermissions");
   if (!raw) return DEFAULT_NAV_PERMISSIONS;
-  try { return JSON.parse(raw) as typeof DEFAULT_NAV_PERMISSIONS; } catch { return DEFAULT_NAV_PERMISSIONS; }
+  try {
+    const parsed = JSON.parse(raw) as Partial<typeof DEFAULT_NAV_PERMISSIONS>;
+    return {
+      operator: parsed.operator ?? DEFAULT_NAV_PERMISSIONS.operator,
+      member: parsed.member ?? DEFAULT_NAV_PERMISSIONS.member,
+      creator: parsed.creator ?? DEFAULT_NAV_PERMISSIONS.creator,
+    };
+  } catch { return DEFAULT_NAV_PERMISSIONS; }
 }
 
 router.get("/settings", async (_req, res): Promise<void> => {
@@ -45,7 +53,7 @@ router.get("/settings", async (_req, res): Promise<void> => {
 router.put("/settings", async (req, res): Promise<void> => {
   const { appName, logoUrl, calendarClientName, prosocialIconUrl, navPermissions } = req.body as {
     appName?: string; logoUrl?: string | null; calendarClientName?: string | null; prosocialIconUrl?: string | null;
-    navPermissions?: { operator: string[]; member: string[] };
+    navPermissions?: { operator: string[]; member: string[]; creator: string[] };
   };
   if (appName !== undefined) await setSetting("appName", appName || DEFAULTS.appName);
   if (logoUrl !== undefined) await setSetting("logoUrl", logoUrl || null);

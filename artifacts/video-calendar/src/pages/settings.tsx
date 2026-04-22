@@ -17,6 +17,7 @@ import { ALL_NAV_ITEMS } from "@/components/layout";
 const DEFAULT_NAV_PERMISSIONS = {
   operator: ["/", "/calendar", "/videos"],
   member: ["/corrida-bonus"],
+  creator: ["/corrida-bonus"],
 };
 
 function ImageUpload({
@@ -89,7 +90,7 @@ export default function Settings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [calendarClientName, setCalendarClientName] = useState("");
   const [prosocialIconUrl, setProsocialIconUrl] = useState<string | null>(null);
-  const [navPermissions, setNavPermissions] = useState<{ operator: string[]; member: string[] }>(DEFAULT_NAV_PERMISSIONS);
+  const [navPermissions, setNavPermissions] = useState<{ operator: string[]; member: string[]; creator: string[] }>(DEFAULT_NAV_PERMISSIONS);
   const [initialized, setInitialized] = useState(false);
 
   if (settings && !initialized) {
@@ -97,11 +98,16 @@ export default function Settings() {
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
     setProsocialIconUrl(settings.prosocialIconUrl ?? null);
-    setNavPermissions(settings.navPermissions ?? DEFAULT_NAV_PERMISSIONS);
+    const perms = settings.navPermissions;
+    setNavPermissions({
+      operator: perms?.operator ?? DEFAULT_NAV_PERMISSIONS.operator,
+      member: perms?.member ?? DEFAULT_NAV_PERMISSIONS.member,
+      creator: perms?.creator ?? DEFAULT_NAV_PERMISSIONS.creator,
+    });
     setInitialized(true);
   }
 
-  const togglePermission = (role: "operator" | "member", href: string) => {
+  const togglePermission = (role: "operator" | "member" | "creator", href: string) => {
     setNavPermissions(prev => {
       const current = prev[role];
       const next = current.includes(href)
@@ -229,9 +235,10 @@ export default function Settings() {
               <thead>
                 <tr className="border-b">
                   <th className="text-left py-2 pr-4 font-medium text-muted-foreground w-full">Item do menu</th>
-                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Admin</th>
-                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Operador</th>
-                  <th className="text-center py-2 px-4 font-medium min-w-[90px]">Membro</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[80px]">Admin</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[80px]">Operador</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[80px]">Membro</th>
+                  <th className="text-center py-2 px-4 font-medium min-w-[80px]">Creator</th>
                 </tr>
               </thead>
               <tbody>
@@ -266,6 +273,15 @@ export default function Settings() {
                         <Checkbox
                           checked={navPermissions.member.includes(item.href)}
                           onCheckedChange={() => togglePermission("member", item.href)}
+                        />
+                      </div>
+                    </td>
+                    {/* Creator */}
+                    <td className="py-3 px-4 text-center">
+                      <div className="flex justify-center">
+                        <Checkbox
+                          checked={navPermissions.creator.includes(item.href)}
+                          onCheckedChange={() => togglePermission("creator", item.href)}
                         />
                       </div>
                     </td>
