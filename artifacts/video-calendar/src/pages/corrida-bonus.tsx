@@ -69,6 +69,14 @@ export default function CorridaBonus() {
 
   const duos = report?.byDuo ?? [];
   const sorted = [...duos].sort((a, b) => {
+    const aMetGoal = a.delivered >= a.weekGoal;
+    const bMetGoal = b.delivered >= b.weekGoal;
+    // Both met goal → most delivered wins
+    if (aMetGoal && bMetGoal) return b.delivered - a.delivered;
+    // Only one met → that one ranks higher
+    if (aMetGoal) return -1;
+    if (bMetGoal) return 1;
+    // Neither met → sort by percentage progress
     const pctA = a.weekGoal > 0 ? a.delivered / a.weekGoal : 0;
     const pctB = b.weekGoal > 0 ? b.delivered / b.weekGoal : 0;
     return pctB - pctA;
@@ -100,7 +108,7 @@ export default function CorridaBonus() {
             Corrida do Bônus
           </h1>
           <p className="text-muted-foreground mt-1">
-            A dupla que entregar mais vídeos acima da meta leva o bônus do período.
+            A dupla que bater a meta leva o bônus. Se todas baterem, ganha quem tiver a maior contagem.
           </p>
         </div>
         <div className="flex items-center rounded-lg border bg-muted p-1 gap-1 self-start sm:self-auto">
@@ -200,13 +208,15 @@ export default function CorridaBonus() {
               </Card>
             ) : (
               sorted.map((d, idx) => {
-                const pct = d.weekGoal > 0 ? Math.min(100, (d.delivered / d.weekGoal) * 100) : 0;
+                const pct = d.weekGoal > 0 ? (d.delivered / d.weekGoal) * 100 : 0;
+                const fillPct = Math.min(100, pct);
                 const racerColor = RACER_COLORS[idx % RACER_COLORS.length];
                 const isBonusWinner = hasBonusWinner && bonusWinner.duo.id === d.duo.id;
                 const isGoalMet = d.goalMet;
                 const overage = d.delivered - d.weekGoal;
                 const isHot = pct >= 75 && !isGoalMet;
-                const racerLeft = Math.max(4, Math.min(pct, 92));
+                // Racer at flag when goal met, otherwise follows progress
+                const racerLeft = isGoalMet ? 92 : Math.max(4, Math.min(pct, 88));
 
                 return (
                   <div
@@ -299,18 +309,29 @@ export default function CorridaBonus() {
                     {/* Race track */}
                     <div className="relative mb-4">
                       <div className="h-9 bg-muted rounded-full overflow-hidden relative">
+                        {/* Fill bar — capped at 100% but solid color when goal met */}
                         <div
                           className="absolute left-0 top-0 bottom-0 rounded-full transition-all duration-700"
                           style={{
-                            width: `${pct}%`,
+                            width: `${fillPct}%`,
                             backgroundColor: isBonusWinner
                               ? "#f59e0b"
                               : isGoalMet
                               ? "#10b981"
                               : racerColor,
-                            opacity: 0.3,
+                            opacity: isGoalMet ? 0.45 : 0.3,
                           }}
                         />
+                        {/* Bonus stripe overlay when exceeding goal */}
+                        {isGoalMet && overage > 0 && (
+                          <div
+                            className="absolute right-0 top-0 bottom-0 rounded-r-full"
+                            style={{
+                              width: "100%",
+                              background: `repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.15) 4px, rgba(255,255,255,0.15) 8px)`,
+                            }}
+                          />
+                        )}
                         {[25, 50, 75].map((mark) => (
                           <div
                             key={mark}
@@ -324,7 +345,7 @@ export default function CorridaBonus() {
                           </span>
                           {isGoalMet && overage > 0 && (
                             <span className="flex items-center gap-0.5 text-xs font-semibold text-emerald-700">
-                              <TrendingUp className="h-3 w-3" />+{overage} acima
+                              <TrendingUp className="h-3 w-3" />+{overage} acima da meta
                             </span>
                           )}
                         </div>
