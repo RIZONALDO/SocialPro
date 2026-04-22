@@ -74,7 +74,7 @@ export default function Settings() {
   const [initialized, setInitialized] = useState(false);
 
   if (settings && !initialized) {
-    setAppName(settings.appName ?? "Minha Produtora");
+    setAppName(settings.appName ?? "ProSocial");
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
     setInitialized(true);
@@ -84,7 +84,7 @@ export default function Settings() {
     updateSettings.mutate(
       {
         data: {
-          appName: appName || "Minha Produtora",
+          appName: appName || "ProSocial",
           logoUrl: logoUrl || null,
           calendarClientName: calendarClientName || null,
         },
@@ -125,7 +125,7 @@ export default function Settings() {
               id="appName"
               value={appName}
               onChange={(e) => setAppName(e.target.value)}
-              placeholder="Minha Produtora"
+              placeholder="ProSocial"
             />
           </div>
         </CardContent>

@@ -27,10 +27,14 @@ const ALL_NAV_ITEMS = [
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
-  const appName = settings?.appName ?? "Minha Produtora";
+  const appName = settings?.appName ?? "ProSocial";
   const logoUrl = settings?.logoUrl ?? null;
   const { theme, toggle: toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+
+  useEffect(() => {
+    document.title = appName;
+  }, [appName]);
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     const saved = localStorage.getItem("sidebar-collapsed");

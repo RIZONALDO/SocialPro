@@ -1,6 +1,6 @@
 import app from "./app";
 import { logger } from "./lib/logger";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, settingsTable } from "@workspace/db";
 import { like, eq, and } from "drizzle-orm";
 
 /** Emergency reset: if ADMIN_PASSWORD_RESET env var is set, update admin password then clear expectation */
@@ -21,6 +21,22 @@ async function emergencyAdminPasswordReset() {
     }
   } catch (err) {
     logger.warn({ err }, "Emergency admin password reset failed");
+  }
+}
+
+/** One-time migration: set appName to "ProSocial" if it was the old default or unset */
+async function migrateAppName() {
+  try {
+    const [row] = await db.select().from(settingsTable).where(eq(settingsTable.key, "appName"));
+    if (!row || row.value === "Minha Produtora") {
+      await db
+        .insert(settingsTable)
+        .values({ key: "appName", value: "ProSocial" })
+        .onConflictDoUpdate({ target: settingsTable.key, set: { value: "ProSocial" } });
+      logger.info("App name set to ProSocial");
+    }
+  } catch (err) {
+    logger.warn({ err }, "App name migration skipped");
   }
 }
 
@@ -71,13 +87,15 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-emergencyAdminPasswordReset().then(() => migrateAdminUsername()).then(() => {
-  app.listen(port, (err) => {
-    if (err) {
-      logger.error({ err }, "Error listening on port");
-      process.exit(1);
-    }
-
-    logger.info({ port }, "Server listening");
+emergencyAdminPasswordReset()
+  .then(() => migrateAdminUsername())
+  .then(() => migrateAppName())
+  .then(() => {
+    app.listen(port, (err) => {
+      if (err) {
+        logger.error({ err }, "Error listening on port");
+        process.exit(1);
+      }
+      logger.info({ port }, "Server listening");
+    });
   });
-});

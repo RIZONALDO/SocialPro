@@ -17,11 +17,11 @@ interface BrandInfo {
 async function fetchBrand(): Promise<BrandInfo> {
   try {
     const res = await fetch(`${BASE}/api/settings`, { credentials: "include" });
-    if (!res.ok) return { appName: "Minha Produtora", logoUrl: null };
+    if (!res.ok) return { appName: "ProSocial", logoUrl: null };
     const data = await res.json();
-    return { appName: data.appName ?? "Minha Produtora", logoUrl: data.logoUrl ?? null };
+    return { appName: data.appName ?? "ProSocial", logoUrl: data.logoUrl ?? null };
   } catch {
-    return { appName: "Minha Produtora", logoUrl: null };
+    return { appName: "ProSocial", logoUrl: null };
   }
 }
 
