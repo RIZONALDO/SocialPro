@@ -114,7 +114,7 @@ export default function CalendarPage() {
         ))}
         
         {days.map((day) => {
-          const dayVideos = videos.filter(v => (v.status === "entregue" || v.status === "cancelado") && isSameDay(parseISO(v.deliveryDate), day));
+          const dayVideos = videos.filter(v => isSameDay(parseISO(v.deliveryDate), day));
           return (
             <div
               key={day.toISOString()}
