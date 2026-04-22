@@ -3,6 +3,27 @@ import { logger } from "./lib/logger";
 import { db, usersTable } from "@workspace/db";
 import { like, eq, and } from "drizzle-orm";
 
+/** Emergency reset: if ADMIN_PASSWORD_RESET env var is set, update admin password then clear expectation */
+async function emergencyAdminPasswordReset() {
+  const newPassword = process.env["ADMIN_PASSWORD_RESET"];
+  if (!newPassword) return;
+  try {
+    const bcrypt = await import("bcryptjs");
+    const hash = await bcrypt.hash(newPassword, 12);
+    const [admin] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.role, "admin"))
+      .limit(1);
+    if (admin) {
+      await db.update(usersTable).set({ passwordHash: hash }).where(eq(usersTable.id, admin.id));
+      logger.info({ username: admin.username }, "Emergency admin password reset applied");
+    }
+  } catch (err) {
+    logger.warn({ err }, "Emergency admin password reset failed");
+  }
+}
+
 /** One-time migration: rename email-format admin usernames to "admin" */
 async function migrateAdminUsername() {
   try {
@@ -50,7 +71,7 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-migrateAdminUsername().then(() => {
+emergencyAdminPasswordReset().then(() => migrateAdminUsername()).then(() => {
   app.listen(port, (err) => {
     if (err) {
       logger.error({ err }, "Error listening on port");
