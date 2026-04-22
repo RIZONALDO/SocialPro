@@ -3,8 +3,9 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Video, User, Lock, AlertCircle } from "lucide-react";
+import { Video, User, Lock, AlertCircle, Eye, EyeOff, Check, X } from "lucide-react";
 import { photoStorageUrl } from "@/components/photo-upload";
+import { PASSWORD_RULES } from "@/lib/password-validation";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -56,6 +57,7 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
   const [brand, setBrand] = useState<BrandInfo | null>(null);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -179,16 +181,37 @@ export default function LoginPage({ onSuccess }: { onSuccess: () => void }) {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete={isSetup ? "new-password" : "current-password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  minLength={6}
-                  className="pl-9 h-11"
+                  className="pl-9 pr-10 h-11"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  tabIndex={-1}
+                  aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
+              {isSetup && password.length > 0 && (
+                <ul className="mt-1.5 space-y-1">
+                  {PASSWORD_RULES.map((rule) => {
+                    const ok = rule.test(password);
+                    return (
+                      <li key={rule.id} className={`flex items-center gap-1.5 text-xs ${ok ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}>
+                        {ok ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                        {rule.label}
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
             </div>
 
             {error && (
