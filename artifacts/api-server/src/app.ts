@@ -3,9 +3,13 @@ import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
+import path from "path";
+import { fileURLToPath } from "url";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { pool } from "@workspace/db";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const PgStore = connectPgSimple(session);
 
@@ -35,8 +39,8 @@ app.use(
 );
 
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 const sessionSecret = process.env["SESSION_SECRET"];
 if (!sessionSecret) {
@@ -59,5 +63,13 @@ app.use(
 );
 
 app.use("/api", router);
+
+if (process.env["NODE_ENV"] === "production") {
+  const frontendDir = path.resolve(__dirname, "../../video-calendar/dist/public");
+  app.use(express.static(frontendDir));
+  app.get("/{*path}", (_req, res) => {
+    res.sendFile(path.join(frontendDir, "index.html"));
+  });
+}
 
 export default app;
