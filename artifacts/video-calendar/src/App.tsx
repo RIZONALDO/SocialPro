@@ -1,10 +1,13 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarLayout } from "@/components/layout";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider, useAuth } from "@/lib/auth";
+import { useGetSettings } from "@workspace/api-client-react";
+import { photoStorageUrl } from "@/lib/photo-storage";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
@@ -18,6 +21,16 @@ import NotFound from "@/pages/not-found";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },
 });
+
+function FaviconApplier() {
+  const { data: settings } = useGetSettings();
+  useEffect(() => {
+    const url = photoStorageUrl(settings?.faviconUrl) ?? "/favicon.svg";
+    const link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (link) link.href = url;
+  }, [settings?.faviconUrl]);
+  return null;
+}
 
 const OPERATOR_PATHS = ["/", "/calendar", "/videos"];
 const MEMBER_PATH = "/corrida-bonus";
@@ -86,6 +99,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
+          <FaviconApplier />
           <TooltipProvider>
             <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
               <Router />

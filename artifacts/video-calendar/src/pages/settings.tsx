@@ -90,6 +90,7 @@ export default function Settings() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [calendarClientName, setCalendarClientName] = useState("");
   const [prosocialIconUrl, setProsocialIconUrl] = useState<string | null>(null);
+  const [faviconUrl, setFaviconUrl] = useState<string | null>(null);
   const [navPermissions, setNavPermissions] = useState<{ operator: string[]; member: string[]; creator: string[] }>(DEFAULT_NAV_PERMISSIONS);
   const [initialized, setInitialized] = useState(false);
 
@@ -98,6 +99,7 @@ export default function Settings() {
     setLogoUrl(settings.logoUrl ?? null);
     setCalendarClientName(settings.calendarClientName ?? "");
     setProsocialIconUrl(settings.prosocialIconUrl ?? null);
+    setFaviconUrl(settings.faviconUrl ?? null);
     const perms = settings.navPermissions;
     setNavPermissions({
       operator: perms?.operator ?? DEFAULT_NAV_PERMISSIONS.operator,
@@ -125,6 +127,7 @@ export default function Settings() {
           logoUrl: logoUrl || null,
           calendarClientName: calendarClientName || null,
           prosocialIconUrl: prosocialIconUrl || null,
+          faviconUrl: faviconUrl || null,
           navPermissions,
         },
       },
@@ -162,6 +165,24 @@ export default function Settings() {
             label="Ícone ProSocial"
             description="Clique para enviar o ícone do app."
             onUploaded={(path) => setProsocialIconUrl(path || null)}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Favicon */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Favicon</CardTitle>
+          <CardDescription>
+            Ícone exibido na aba do navegador. Recomendado: PNG quadrado 32×32 ou 64×64 px.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ImageUpload
+            currentUrl={faviconUrl}
+            label="Favicon"
+            description="Clique para enviar o ícone da aba (PNG/ICO/SVG)."
+            onUploaded={(path) => setFaviconUrl(path || null)}
           />
         </CardContent>
       </Card>

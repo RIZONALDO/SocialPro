@@ -78,6 +78,7 @@ export interface AppSettings {
   logoUrl?: string | null;
   calendarClientName?: string | null;
   prosocialIconUrl?: string | null;
+  faviconUrl?: string | null;
   navPermissions?: NavPermissions | null;
 }
 
