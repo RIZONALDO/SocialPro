@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { format, startOfMonth, endOfMonth, addMonths, subMonths, eachDayOfInterval, isSameMonth, isToday, parseISO, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, addMonths, subMonths, eachDayOfInterval, isToday, parseISO, isSameDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useListVideos, getListVideosQueryKey, Video, useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListVideos, getListVideosQueryKey, Video, useGetSettings, getGetSettingsQueryKey, useUpdateVideo, getGetDashboardSummaryQueryKey, getGetWeeklyReportQueryKey } from "@workspace/api-client-react";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { VideoDialog } from "@/components/video-dialog";
 import { DayDetailsDialog } from "@/components/day-details-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
@@ -15,6 +17,13 @@ export default function CalendarPage() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const [dayDetailsOpen, setDayDetailsOpen] = useState(false);
   const [dayDetailsDate, setDayDetailsDate] = useState<Date | null>(null);
+  const [draggingVideoId, setDraggingVideoId] = useState<number | null>(null);
+  const [dragOverDay, setDragOverDay] = useState<string | null>(null);
+
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const updateVideo = useUpdateVideo();
+
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const calendarTitle = settings?.calendarClientName
     ? `Calendário ${settings.calendarClientName}`
@@ -22,7 +31,7 @@ export default function CalendarPage() {
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
-  
+
   const { data: videos = [] } = useListVideos(
     { from: format(monthStart, "yyyy-MM-dd"), to: format(monthEnd, "yyyy-MM-dd") },
     { query: { queryKey: getListVideosQueryKey({ from: format(monthStart, "yyyy-MM-dd"), to: format(monthEnd, "yyyy-MM-dd") }) } }
@@ -34,6 +43,7 @@ export default function CalendarPage() {
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
 
   const handleDayClick = (day: Date) => {
+    if (draggingVideoId !== null) return;
     setDayDetailsDate(day);
     setDayDetailsOpen(true);
   };
@@ -67,6 +77,52 @@ export default function CalendarPage() {
     setSelectedDate(new Date());
     setSelectedVideo(null);
     setIsDialogOpen(true);
+  };
+
+  // Drag and drop handlers
+  const handleDragStart = (e: React.DragEvent, video: Video) => {
+    e.dataTransfer.setData("videoId", video.id.toString());
+    e.dataTransfer.effectAllowed = "move";
+    setDraggingVideoId(video.id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingVideoId(null);
+    setDragOverDay(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent, dayIso: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDragOverDay(dayIso);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverDay(null);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, day: Date) => {
+    e.preventDefault();
+    const videoId = parseInt(e.dataTransfer.getData("videoId"));
+    const video = videos.find(v => v.id === videoId);
+    setDraggingVideoId(null);
+    setDragOverDay(null);
+    if (!video) return;
+    const newDate = format(day, "yyyy-MM-dd");
+    if (newDate === video.deliveryDate) return;
+    updateVideo.mutate(
+      { id: videoId, data: { deliveryDate: newDate } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListVideosQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetDashboardSummaryQueryKey() });
+          queryClient.invalidateQueries({ queryKey: getGetWeeklyReportQueryKey() });
+          toast({ title: "Data atualizada" });
+        },
+      }
+    );
   };
 
   return (
@@ -108,20 +164,25 @@ export default function CalendarPage() {
             {dayName}
           </div>
         ))}
-        
+
         {Array.from({ length: monthStart.getDay() }).map((_, index) => (
           <div key={`empty-${index}`} className="bg-muted/30 rounded-lg min-h-[120px] p-2" />
         ))}
-        
+
         {days.map((day) => {
+          const dayIso = day.toISOString();
           const dayVideos = videos.filter(v => isSameDay(parseISO(v.deliveryDate), day));
+          const isDropTarget = dragOverDay === dayIso;
           return (
             <div
-              key={day.toISOString()}
+              key={dayIso}
               onClick={() => handleDayClick(day)}
+              onDragOver={(e) => handleDragOver(e, dayIso)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, day)}
               className={`bg-card border rounded-lg min-h-[120px] p-2 cursor-pointer transition-colors hover:bg-muted/50 ${
                 isToday(day) ? "ring-2 ring-primary" : ""
-              }`}
+              } ${isDropTarget ? "ring-2 ring-blue-400 bg-blue-50 dark:bg-blue-950/30" : ""}`}
             >
               <div className={`text-sm font-medium ${isToday(day) ? "text-primary" : ""}`}>
                 {format(day, "d")}
@@ -130,8 +191,13 @@ export default function CalendarPage() {
                 {dayVideos.map(video => (
                   <div
                     key={video.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, video)}
+                    onDragEnd={handleDragEnd}
                     onClick={(e) => handleVideoClick(e, video)}
-                    className={`truncate rounded px-1.5 py-0.5 text-xs font-medium cursor-pointer ${STATUS_COLORS[video.status]}`}
+                    className={`truncate rounded px-1.5 py-0.5 text-xs font-medium cursor-grab active:cursor-grabbing transition-opacity ${STATUS_COLORS[video.status]} ${
+                      draggingVideoId === video.id ? "opacity-40" : ""
+                    }`}
                     title={video.title}
                   >
                     {video.title}
@@ -141,7 +207,7 @@ export default function CalendarPage() {
             </div>
           );
         })}
-        
+
         {Array.from({ length: monthEnd.getDay() === 0 ? 0 : 6 - monthEnd.getDay() }).map((_, index) => (
           <div key={`empty-end-${index}`} className="bg-muted/30 rounded-lg min-h-[120px] p-2" />
         ))}
