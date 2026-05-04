@@ -25,7 +25,7 @@ export const ListVideosQueryParams = zod.object({
 export const ListVideosResponseItem = zod.object({
   id: zod.number(),
   title: zod.string(),
-  deliveryDate: zod.coerce.date(),
+  deliveryDate: zod.string(),
   status: zod.enum([
     "planejado",
     "em_producao",
@@ -106,7 +106,7 @@ export const GetVideoParams = zod.object({
 export const GetVideoResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
-  deliveryDate: zod.coerce.date(),
+  deliveryDate: zod.string(),
   status: zod.enum([
     "planejado",
     "em_producao",
@@ -184,7 +184,7 @@ export const UpdateVideoBody = zod.object({
 export const UpdateVideoResponse = zod.object({
   id: zod.number(),
   title: zod.string(),
-  deliveryDate: zod.coerce.date(),
+  deliveryDate: zod.string(),
   status: zod.enum([
     "planejado",
     "em_producao",
@@ -487,7 +487,7 @@ export const GetWeeklyReportResponse = zod.object({
     zod.object({
       id: zod.number(),
       title: zod.string(),
-      deliveryDate: zod.coerce.date(),
+      deliveryDate: zod.string(),
       status: zod.enum([
         "planejado",
         "em_producao",
@@ -608,7 +608,7 @@ export const GetDashboardSummaryResponse = zod.object({
     zod.object({
       id: zod.number(),
       title: zod.string(),
-      deliveryDate: zod.coerce.date(),
+      deliveryDate: zod.string(),
       status: zod.enum([
         "planejado",
         "em_producao",
