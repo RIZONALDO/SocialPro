@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -106,7 +106,7 @@ export function VideoDialog({ open, onOpenChange, video, defaultDate, duplicateF
       if (video) {
         form.reset({
           title: video.title,
-          deliveryDate: new Date(video.deliveryDate),
+          deliveryDate: parseISO(video.deliveryDate),
           status: video.status,
           client: video.client || "",
           platform: video.platform || "",

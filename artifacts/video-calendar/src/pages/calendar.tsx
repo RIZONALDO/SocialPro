@@ -142,7 +142,7 @@ export default function CalendarPage() {
           );
         })}
         
-        {Array.from({ length: 6 - monthEnd.getDay() }).map((_, index) => (
+        {Array.from({ length: monthEnd.getDay() === 0 ? 0 : 6 - monthEnd.getDay() }).map((_, index) => (
           <div key={`empty-end-${index}`} className="bg-muted/30 rounded-lg min-h-[120px] p-2" />
         ))}
       </div>
