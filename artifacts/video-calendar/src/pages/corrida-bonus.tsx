@@ -64,50 +64,47 @@ function PeriodNavigator({
   onToday: () => void;
 }) {
   return (
-    <div className="flex flex-col items-start sm:items-end gap-2 self-start sm:self-auto">
-      <div className="flex items-center rounded-lg border bg-muted p-1 gap-1">
+    <div className="flex items-center rounded-lg border bg-muted p-1 gap-1 self-start sm:self-auto">
+      <Button
+        variant={period === "semana" ? "default" : "ghost"}
+        size="sm"
+        onClick={() => onPeriodChange("semana")}
+      >
+        Semana
+      </Button>
+      <Button
+        variant={period === "mes" ? "default" : "ghost"}
+        size="sm"
+        onClick={() => onPeriodChange("mes")}
+      >
+        Mês
+      </Button>
+      <div className="w-px h-5 bg-border mx-1" />
+      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onPrev}>
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <span className="font-medium capitalize text-sm min-w-[130px] text-center px-1">
+        {periodLabel}
+      </span>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7"
+        disabled={isCurrentPeriod}
+        onClick={onNext}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+      {!isCurrentPeriod && (
         <Button
-          variant={period === "semana" ? "default" : "ghost"}
+          variant="ghost"
           size="sm"
-          onClick={() => onPeriodChange("semana")}
+          className="text-xs h-7 px-2 text-muted-foreground"
+          onClick={onToday}
         >
-          Semana
+          Hoje
         </Button>
-        <Button
-          variant={period === "mes" ? "default" : "ghost"}
-          size="sm"
-          onClick={() => onPeriodChange("mes")}
-        >
-          Mês
-        </Button>
-      </div>
-      <div className="flex items-center gap-1.5">
-        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onPrev}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="font-medium capitalize text-sm min-w-[140px] text-center">
-          {periodLabel}
-        </span>
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7"
-          disabled={isCurrentPeriod}
-          onClick={onNext}
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-        {!isCurrentPeriod && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs h-7 px-2 text-muted-foreground"
-            onClick={onToday}
-          >
-            Hoje
-          </Button>
-        )}
-      </div>
+      )}
     </div>
   );
 }
