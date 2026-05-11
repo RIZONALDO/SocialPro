@@ -46,6 +46,72 @@ const RACER_COLORS = [
 
 import type { DuoReport } from "@workspace/api-client-react";
 
+function PeriodNavigator({
+  period,
+  onPeriodChange,
+  periodLabel,
+  isCurrentPeriod,
+  onPrev,
+  onNext,
+  onToday,
+}: {
+  period: Period;
+  onPeriodChange: (p: Period) => void;
+  periodLabel: string;
+  isCurrentPeriod: boolean;
+  onPrev: () => void;
+  onNext: () => void;
+  onToday: () => void;
+}) {
+  return (
+    <div className="flex flex-col items-start sm:items-end gap-2 self-start sm:self-auto">
+      <div className="flex items-center rounded-lg border bg-muted p-1 gap-1">
+        <Button
+          variant={period === "semana" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => onPeriodChange("semana")}
+        >
+          Semana
+        </Button>
+        <Button
+          variant={period === "mes" ? "default" : "ghost"}
+          size="sm"
+          onClick={() => onPeriodChange("mes")}
+        >
+          Mês
+        </Button>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <Button variant="outline" size="icon" className="h-7 w-7" onClick={onPrev}>
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="font-medium capitalize text-sm min-w-[140px] text-center">
+          {periodLabel}
+        </span>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-7 w-7"
+          disabled={isCurrentPeriod}
+          onClick={onNext}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+        {!isCurrentPeriod && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs h-7 px-2 text-muted-foreground"
+            onClick={onToday}
+          >
+            Hoje
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function computeBonusWinner(duos: DuoReport[]): (DuoReport & { overage: number }) | null {
   const above = duos
     .map((d) => ({ ...d, overage: d.delivered - d.periodGoal }))
@@ -117,7 +183,7 @@ export default function CorridaBonus() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             <Crown className="h-8 w-8 text-amber-500" />
@@ -126,64 +192,20 @@ export default function CorridaBonus() {
           <p className="text-muted-foreground mt-1">
             A dupla que bater a meta leva o bônus. Se todas baterem, ganha quem tiver a maior contagem.
           </p>
-        </div>
-        <div className="flex items-center rounded-lg border bg-muted p-1 gap-1 self-start sm:self-auto">
-          <Button
-            variant={period === "semana" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setPeriod("semana"); setWeekOffset(0); }}
-          >
-            Semana
-          </Button>
-          <Button
-            variant={period === "mes" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => { setPeriod("mes"); setMonthOffset(0); }}
-          >
-            Mês
-          </Button>
-        </div>
-      </div>
-
-      {/* Period navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            onClick={() => period === "semana" ? setWeekOffset(o => o - 1) : setMonthOffset(o => o - 1)}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="font-medium capitalize text-sm min-w-[130px] text-center">
-            {periodLabel}
+          <span className="flex items-center gap-1.5 text-sm text-muted-foreground mt-3">
+            <Target className="h-4 w-4 text-primary" />
+            {goalLabel}
           </span>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-7 w-7"
-            disabled={isCurrentPeriod}
-            onClick={() => period === "semana" ? setWeekOffset(o => o + 1) : setMonthOffset(o => o + 1)}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-          {!isCurrentPeriod && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs h-7 px-2 text-muted-foreground"
-              onClick={() => period === "semana" ? setWeekOffset(0) : setMonthOffset(0)}
-            >
-              Hoje
-            </Button>
-          )}
         </div>
-        <span className="hidden sm:block text-muted-foreground/40">|</span>
-        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <Target className="h-4 w-4 text-primary" />
-          {goalLabel}
-        </span>
+        <PeriodNavigator
+          period={period}
+          onPeriodChange={(p) => { setPeriod(p); setWeekOffset(0); setMonthOffset(0); }}
+          periodLabel={periodLabel}
+          isCurrentPeriod={isCurrentPeriod}
+          onPrev={() => period === "semana" ? setWeekOffset(o => o - 1) : setMonthOffset(o => o - 1)}
+          onNext={() => period === "semana" ? setWeekOffset(o => o + 1) : setMonthOffset(o => o + 1)}
+          onToday={() => period === "semana" ? setWeekOffset(0) : setMonthOffset(0)}
+        />
       </div>
 
       {isLoading ? (
