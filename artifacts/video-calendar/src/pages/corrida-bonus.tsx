@@ -3,6 +3,8 @@ import {
   format,
   startOfWeek,
   startOfMonth,
+  addWeeks,
+  addMonths,
   parseISO,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -16,6 +18,8 @@ import {
   Crown,
   Star,
   TrendingUp,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   useGetWeeklyReport,
@@ -52,10 +56,16 @@ function computeBonusWinner(duos: DuoReport[]): (DuoReport & { overage: number }
 
 export default function CorridaBonus() {
   const [period, setPeriod] = useState<Period>("semana");
+  const [weekOffset, setWeekOffset] = useState(0);
+  const [monthOffset, setMonthOffset] = useState(0);
 
   const today = new Date();
-  const weekOf = format(startOfWeek(today, { weekStartsOn: 1 }), "yyyy-MM-dd");
-  const monthOf = format(today, "yyyy-MM-01");
+  const baseWeekStart = startOfWeek(today, { weekStartsOn: 1 });
+  const targetWeekStart = addWeeks(baseWeekStart, weekOffset);
+  const weekOf = format(targetWeekStart, "yyyy-MM-dd");
+
+  const targetMonth = addMonths(startOfMonth(today), monthOffset);
+  const monthOf = format(targetMonth, "yyyy-MM-01");
 
   const weekQuery = useGetWeeklyReport(
     { weekOf },
@@ -63,7 +73,7 @@ export default function CorridaBonus() {
   );
   const monthQuery = useGetMonthlyReport(
     { monthOf },
-    { query: { enabled: period === "mes" } }
+    { query: { queryKey: getGetMonthlyReportQueryKey({ monthOf }), enabled: period === "mes" } }
   );
 
   const report = period === "semana" ? weekQuery.data : monthQuery.data;
@@ -73,12 +83,9 @@ export default function CorridaBonus() {
   const sorted = [...duos].sort((a, b) => {
     const aMetGoal = a.delivered >= a.periodGoal;
     const bMetGoal = b.delivered >= b.periodGoal;
-    // Both met goal → most delivered wins
     if (aMetGoal && bMetGoal) return b.delivered - a.delivered;
-    // Only one met → that one ranks higher
     if (aMetGoal) return -1;
     if (bMetGoal) return 1;
-    // Neither met → sort by percentage progress
     const pctA = a.periodGoal > 0 ? a.delivered / a.periodGoal : 0;
     const pctB = b.periodGoal > 0 ? b.delivered / b.periodGoal : 0;
     return pctB - pctA;
@@ -86,14 +93,16 @@ export default function CorridaBonus() {
   const bonusWinner = computeBonusWinner(sorted);
   const hasBonusWinner = bonusWinner !== null;
 
+  const isCurrentPeriod = period === "semana" ? weekOffset === 0 : monthOffset === 0;
+
   const periodLabel =
     period === "semana"
       ? report
         ? `${format(parseISO(String(report.weekStart).slice(0, 10)), "dd/MM")} a ${format(parseISO(String(report.weekEnd).slice(0, 10)), "dd/MM")}`
-        : "Esta semana"
+        : format(targetWeekStart, "dd/MM")
       : report
       ? format(parseISO(String(report.weekStart).slice(0, 10)), "MMMM yyyy", { locale: ptBR })
-      : "Este mês";
+      : format(targetMonth, "MMMM yyyy", { locale: ptBR });
 
   const representativeDailyGoal = duos[0]?.duo.dailyGoal ?? null;
   const goalLabel =
@@ -122,25 +131,56 @@ export default function CorridaBonus() {
           <Button
             variant={period === "semana" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setPeriod("semana")}
+            onClick={() => { setPeriod("semana"); setWeekOffset(0); }}
           >
-            Esta semana
+            Semana
           </Button>
           <Button
             variant={period === "mes" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setPeriod("mes")}
+            onClick={() => { setPeriod("mes"); setMonthOffset(0); }}
           >
-            Este mês
+            Mês
           </Button>
         </div>
       </div>
 
-      {/* Period label */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 text-sm text-muted-foreground">
-        <span className="font-medium capitalize">{periodLabel}</span>
+      {/* Period navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => period === "semana" ? setWeekOffset(o => o - 1) : setMonthOffset(o => o - 1)}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <span className="font-medium capitalize text-sm min-w-[130px] text-center">
+            {periodLabel}
+          </span>
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-7 w-7"
+            disabled={isCurrentPeriod}
+            onClick={() => period === "semana" ? setWeekOffset(o => o + 1) : setMonthOffset(o => o + 1)}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {!isCurrentPeriod && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs h-7 px-2 text-muted-foreground"
+              onClick={() => period === "semana" ? setWeekOffset(0) : setMonthOffset(0)}
+            >
+              Hoje
+            </Button>
+          )}
+        </div>
         <span className="hidden sm:block text-muted-foreground/40">|</span>
-        <span className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Target className="h-4 w-4 text-primary" />
           {goalLabel}
         </span>
