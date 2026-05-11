@@ -95,10 +95,15 @@ export default function CorridaBonus() {
       ? format(parseISO(String(report.weekStart).slice(0, 10)), "MMMM yyyy", { locale: ptBR })
       : "Este mês";
 
+  const representativeDailyGoal = duos[0]?.duo.dailyGoal ?? null;
   const goalLabel =
     period === "semana"
-      ? `Meta: 4 vídeos/dia × 7 dias = 28 vídeos`
-      : `Meta: 4 vídeos/dia × ${report ? new Date(String(report.weekEnd).slice(0, 10)).getDate() : "—"} dias`;
+      ? representativeDailyGoal != null
+        ? `Meta: ${representativeDailyGoal} vídeos/dia × 7 dias = ${representativeDailyGoal * 7} vídeos`
+        : "Meta semanal"
+      : representativeDailyGoal != null && report
+      ? `Meta: ${representativeDailyGoal} vídeos/dia × ${new Date(String(report.weekEnd).slice(0, 10)).getDate()} dias = ${representativeDailyGoal * new Date(String(report.weekEnd).slice(0, 10)).getDate()} vídeos`
+      : "Meta mensal";
 
   return (
     <div className="space-y-6">

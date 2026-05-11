@@ -16,6 +16,13 @@ function toISODate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+// new Date("YYYY-MM-DD") parses as UTC midnight, which in UTC-3 becomes the previous day.
+// Parse directly into local time to avoid this shift.
+function parseLocalDate(iso: string): Date {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
 function startOfWeekMonday(date: Date): Date {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
@@ -54,7 +61,7 @@ function groupByStatus(videos: VideoWithPeople[]) {
 
 router.get("/reports/weekly", async (req, res): Promise<void> => {
   const weekOfRaw = typeof req.query["weekOf"] === "string" ? req.query["weekOf"] : undefined;
-  const ref = weekOfRaw ? new Date(weekOfRaw) : new Date();
+  const ref = weekOfRaw ? parseLocalDate(weekOfRaw) : new Date();
   if (isNaN(ref.getTime())) { res.status(400).json({ error: "Invalid weekOf date" }); return; }
   const start = startOfWeekMonday(ref);
   const end = addDays(start, 6);
@@ -172,7 +179,7 @@ router.get("/reports/summary", async (_req, res): Promise<void> => {
 
 router.get("/reports/monthly", async (req, res): Promise<void> => {
   const monthOfRaw = typeof req.query["monthOf"] === "string" ? req.query["monthOf"] : undefined;
-  const ref = monthOfRaw ? new Date(monthOfRaw) : new Date();
+  const ref = monthOfRaw ? parseLocalDate(monthOfRaw) : new Date();
   if (isNaN(ref.getTime())) { res.status(400).json({ error: "Invalid monthOf date" }); return; }
   const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
   start.setHours(0, 0, 0, 0);
