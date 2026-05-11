@@ -570,7 +570,7 @@ export const GetWeeklyReportResponse = zod.object({
         createdAt: zod.coerce.date(),
       }),
       delivered: zod.number(),
-      weekGoal: zod.number(),
+      periodGoal: zod.number(),
       goalMet: zod.boolean(),
       byDay: zod.array(
         zod.object({

@@ -13,12 +13,7 @@ import { photoStorageUrl } from "@/components/photo-upload";
 import { useToast } from "@/hooks/use-toast";
 import { UserManagement } from "@/components/user-management";
 import { ALL_NAV_ITEMS } from "@/components/layout";
-
-const DEFAULT_NAV_PERMISSIONS = {
-  operator: ["/", "/calendar", "/videos"],
-  member: ["/corrida-bonus"],
-  creator: ["/corrida-bonus"],
-};
+import { DEFAULT_NAV_PERMISSIONS } from "@/lib/nav-permissions";
 
 function ImageUpload({
   currentUrl,

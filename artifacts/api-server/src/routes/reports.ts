@@ -55,6 +55,7 @@ function groupByStatus(videos: VideoWithPeople[]) {
 router.get("/reports/weekly", async (req, res): Promise<void> => {
   const weekOfRaw = typeof req.query["weekOf"] === "string" ? req.query["weekOf"] : undefined;
   const ref = weekOfRaw ? new Date(weekOfRaw) : new Date();
+  if (isNaN(ref.getTime())) { res.status(400).json({ error: "Invalid weekOf date" }); return; }
   const start = startOfWeekMonday(ref);
   const end = addDays(start, 6);
   const weekStart = toISODate(start);
@@ -85,12 +86,12 @@ router.get("/reports/weekly", async (req, res): Promise<void> => {
       const count = matches.filter((v) => String(v.deliveryDate) === date).length;
       return { date, count, goalMet: count >= d.dailyGoal };
     });
-    const weekGoal = d.dailyGoal * 7;
+    const periodGoal = d.dailyGoal * 7;
     return {
       duo: d,
       delivered: matches.length,
-      weekGoal,
-      goalMet: matches.length >= weekGoal,
+      periodGoal,
+      goalMet: matches.length >= periodGoal,
       byDay: days,
     };
   });
@@ -172,6 +173,7 @@ router.get("/reports/summary", async (_req, res): Promise<void> => {
 router.get("/reports/monthly", async (req, res): Promise<void> => {
   const monthOfRaw = typeof req.query["monthOf"] === "string" ? req.query["monthOf"] : undefined;
   const ref = monthOfRaw ? new Date(monthOfRaw) : new Date();
+  if (isNaN(ref.getTime())) { res.status(400).json({ error: "Invalid monthOf date" }); return; }
   const start = new Date(ref.getFullYear(), ref.getMonth(), 1);
   start.setHours(0, 0, 0, 0);
   const end = new Date(ref.getFullYear(), ref.getMonth() + 1, 0);
@@ -209,12 +211,12 @@ router.get("/reports/monthly", async (req, res): Promise<void> => {
       const count = matches.filter((v) => String(v.deliveryDate) === date).length;
       return { date, count, goalMet: count >= d.dailyGoal };
     });
-    const monthGoal = d.dailyGoal * daysInMonth;
+    const periodGoal = d.dailyGoal * daysInMonth;
     return {
       duo: d,
       delivered: matches.length,
-      weekGoal: monthGoal,
-      goalMet: matches.length >= monthGoal,
+      periodGoal,
+      goalMet: matches.length >= periodGoal,
       byDay: days,
     };
   });

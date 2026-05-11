@@ -6,8 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarLayout } from "@/components/layout";
 import { ThemeProvider } from "@/lib/theme";
 import { AuthProvider, useAuth } from "@/lib/auth";
-import { useGetSettings } from "@workspace/api-client-react";
+import { useGetSettings, getGetSettingsQueryKey } from "@workspace/api-client-react";
 import { photoStorageUrl } from "@/lib/photo-storage";
+import { DEFAULT_NAV_PERMISSIONS } from "@/lib/nav-permissions";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import CalendarPage from "@/pages/calendar";
@@ -32,12 +33,22 @@ function FaviconApplier() {
   return null;
 }
 
-const OPERATOR_PATHS = ["/", "/calendar", "/videos"];
-const MEMBER_PATH = "/corrida-bonus";
+// All non-admin routes mapped to their components
+const ROUTE_MAP: { path: string; component: () => JSX.Element }[] = [
+  { path: "/",             component: Dashboard    },
+  { path: "/calendar",    component: CalendarPage  },
+  { path: "/videos",      component: VideoList     },
+  { path: "/team",        component: Team          },
+  { path: "/report",      component: Report        },
+  { path: "/corrida-bonus", component: CorridaBonus },
+];
 
 function Router() {
   const { user, loading } = useAuth();
   const [location, navigate] = useLocation();
+  const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
+
+  const navPermissions = settings?.navPermissions ?? DEFAULT_NAV_PERMISSIONS;
 
   if (loading) {
     return (
@@ -51,43 +62,51 @@ function Router() {
     return <LoginPage onSuccess={() => navigate("/")} />;
   }
 
-  // Member: only corrida-bonus
-  if (user.role === "member") {
-    if (location !== MEMBER_PATH) return <Redirect to={MEMBER_PATH} />;
-    return (
-      <SidebarLayout>
-        <Switch>
-          <Route path={MEMBER_PATH} component={CorridaBonus} />
-        </Switch>
-      </SidebarLayout>
-    );
-  }
-
-  // Operator: dashboard, calendar, videos
-  if (user.role === "operator") {
-    if (!OPERATOR_PATHS.includes(location)) return <Redirect to="/" />;
+  // Admin: full access to everything
+  if (user.role === "admin") {
     return (
       <SidebarLayout>
         <Switch>
           <Route path="/" component={Dashboard} />
           <Route path="/calendar" component={CalendarPage} />
           <Route path="/videos" component={VideoList} />
+          <Route path="/team" component={Team} />
+          <Route path="/report" component={Report} />
+          <Route path="/corrida-bonus" component={CorridaBonus} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route component={NotFound} />
         </Switch>
       </SidebarLayout>
     );
   }
 
-  // Admin: full access
+  // Member: fixed to corrida-bonus only (not configurable)
+  if (user.role === "member") {
+    if (location !== "/corrida-bonus") return <Redirect to="/corrida-bonus" />;
+    return (
+      <SidebarLayout>
+        <Switch>
+          <Route path="/corrida-bonus" component={CorridaBonus} />
+        </Switch>
+      </SidebarLayout>
+    );
+  }
+
+  // Operator & Creator: fully driven by settings.navPermissions
+  const allowedPaths: string[] =
+    user.role === "operator"
+      ? (navPermissions.operator ?? DEFAULT_NAV_PERMISSIONS.operator)
+      : (navPermissions.creator  ?? DEFAULT_NAV_PERMISSIONS.creator);
+
+  const defaultPath = allowedPaths[0] ?? "/";
+  if (!allowedPaths.includes(location)) return <Redirect to={defaultPath} />;
+
   return (
     <SidebarLayout>
       <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/calendar" component={CalendarPage} />
-        <Route path="/videos" component={VideoList} />
-        <Route path="/team" component={Team} />
-        <Route path="/report" component={Report} />
-        <Route path="/corrida-bonus" component={CorridaBonus} />
-        <Route path="/settings" component={SettingsPage} />
+        {ROUTE_MAP.filter(r => allowedPaths.includes(r.path)).map(r => (
+          <Route key={r.path} path={r.path} component={r.component} />
+        ))}
         <Route component={NotFound} />
       </Switch>
     </SidebarLayout>

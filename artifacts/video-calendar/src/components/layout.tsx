@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ChangePasswordDialog, ForcedChangePasswordDialog } from "@/components/change-password-dialog";
+import { DEFAULT_NAV_PERMISSIONS } from "@/lib/nav-permissions";
 
 export const ALL_NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -25,19 +26,13 @@ export const ALL_NAV_ITEMS = [
 
 const ADMIN_HREFS = ALL_NAV_ITEMS.map(i => i.href);
 
-const DEFAULT_PERMISSIONS = {
-  operator: ["/", "/calendar", "/videos"],
-  member: ["/corrida-bonus"],
-  creator: ["/corrida-bonus"],
-};
-
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: settings } = useGetSettings({ query: { queryKey: getGetSettingsQueryKey() } });
   const appName = settings?.appName ?? "Minha Produtora";
   const logoUrl = settings?.logoUrl ?? null;
   const prosocialIconUrl = settings?.prosocialIconUrl ?? null;
-  const navPermissions = settings?.navPermissions ?? DEFAULT_PERMISSIONS;
+  const navPermissions = settings?.navPermissions ?? DEFAULT_NAV_PERMISSIONS;
   const { theme, toggle: toggleTheme } = useTheme();
   const { user, logout, refreshUser } = useAuth();
 
@@ -61,11 +56,11 @@ export function SidebarLayout({ children }: { children: React.ReactNode }) {
     user?.role === "admin"
       ? ADMIN_HREFS
       : user?.role === "operator"
-      ? navPermissions.operator ?? DEFAULT_PERMISSIONS.operator
+      ? navPermissions.operator ?? DEFAULT_NAV_PERMISSIONS.operator
       : user?.role === "member"
-      ? navPermissions.member ?? DEFAULT_PERMISSIONS.member
+      ? navPermissions.member ?? DEFAULT_NAV_PERMISSIONS.member
       : user?.role === "creator"
-      ? navPermissions.creator ?? DEFAULT_PERMISSIONS.creator
+      ? navPermissions.creator ?? DEFAULT_NAV_PERMISSIONS.creator
       : [];
 
   const navItems = ALL_NAV_ITEMS.filter(item => allowedHrefs.includes(item.href));

@@ -40,9 +40,11 @@ const RACER_COLORS = [
   "#10b981",
 ];
 
-function computeBonusWinner(duos: any[]) {
+import type { DuoReport } from "@workspace/api-client-react";
+
+function computeBonusWinner(duos: DuoReport[]): (DuoReport & { overage: number }) | null {
   const above = duos
-    .map((d) => ({ ...d, overage: d.delivered - d.weekGoal }))
+    .map((d) => ({ ...d, overage: d.delivered - d.periodGoal }))
     .filter((d) => d.overage >= 0);
   if (above.length === 0) return null;
   return above.reduce((best, d) => (d.overage > best.overage ? d : best));
@@ -67,18 +69,18 @@ export default function CorridaBonus() {
   const report = period === "semana" ? weekQuery.data : monthQuery.data;
   const isLoading = period === "semana" ? weekQuery.isLoading : monthQuery.isLoading;
 
-  const duos = report?.byDuo ?? [];
+  const duos: DuoReport[] = report?.byDuo ?? [];
   const sorted = [...duos].sort((a, b) => {
-    const aMetGoal = a.delivered >= a.weekGoal;
-    const bMetGoal = b.delivered >= b.weekGoal;
+    const aMetGoal = a.delivered >= a.periodGoal;
+    const bMetGoal = b.delivered >= b.periodGoal;
     // Both met goal → most delivered wins
     if (aMetGoal && bMetGoal) return b.delivered - a.delivered;
     // Only one met → that one ranks higher
     if (aMetGoal) return -1;
     if (bMetGoal) return 1;
     // Neither met → sort by percentage progress
-    const pctA = a.weekGoal > 0 ? a.delivered / a.weekGoal : 0;
-    const pctB = b.weekGoal > 0 ? b.delivered / b.weekGoal : 0;
+    const pctA = a.periodGoal > 0 ? a.delivered / a.periodGoal : 0;
+    const pctB = b.periodGoal > 0 ? b.delivered / b.periodGoal : 0;
     return pctB - pctA;
   });
   const bonusWinner = computeBonusWinner(sorted);
@@ -208,12 +210,12 @@ export default function CorridaBonus() {
               </Card>
             ) : (
               sorted.map((d, idx) => {
-                const pct = d.weekGoal > 0 ? (d.delivered / d.weekGoal) * 100 : 0;
+                const pct = d.periodGoal > 0 ? (d.delivered / d.periodGoal) * 100 : 0;
                 const fillPct = Math.min(100, pct);
                 const racerColor = RACER_COLORS[idx % RACER_COLORS.length];
                 const isBonusWinner = hasBonusWinner && bonusWinner.duo.id === d.duo.id;
                 const isGoalMet = d.goalMet;
-                const overage = d.delivered - d.weekGoal;
+                const overage = d.delivered - d.periodGoal;
                 const isHot = pct >= 75 && !isGoalMet;
                 // Racer at flag when goal met, otherwise follows progress
                 const racerLeft = isGoalMet ? 92 : Math.max(4, Math.min(pct, 88));
@@ -301,7 +303,7 @@ export default function CorridaBonus() {
                               : "bg-muted text-foreground border"
                           }`}
                         >
-                          {d.delivered}/{d.weekGoal}
+                          {d.delivered}/{d.periodGoal}
                         </span>
                       </div>
                     </div>

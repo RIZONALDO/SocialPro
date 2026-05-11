@@ -117,7 +117,7 @@ export interface DuoDayCount {
 export interface DuoReport {
   duo: Duo;
   delivered: number;
-  weekGoal: number;
+  periodGoal: number;
   goalMet: boolean;
   byDay: DuoDayCount[];
 }
