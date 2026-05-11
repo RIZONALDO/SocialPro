@@ -66,26 +66,40 @@ function PeriodNavigator({
   return (
     <div className="flex items-center gap-2 self-start sm:self-auto">
       {/* Date navigator */}
-      <div className="flex items-center rounded-lg border bg-muted p-1 gap-1">
-        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onPrev}>
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="font-medium capitalize text-sm min-w-[130px] text-center px-1">
-          {periodLabel}
-        </span>
+      <div className="flex items-center rounded-xl border border-border/60 bg-muted/80 shadow-sm p-1 gap-0.5">
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all"
+          onClick={onPrev}
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+        </Button>
+
+        <span className="font-medium capitalize text-sm min-w-[128px] text-center px-2 text-foreground/80 select-none">
+          {periodLabel}
+        </span>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-background/60 transition-all disabled:opacity-30"
           disabled={isCurrentPeriod}
           onClick={onNext}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3.5 w-3.5" />
         </Button>
+
+        <div className="w-px h-4 bg-border/60 mx-0.5" />
+
         <Button
-          variant={isCurrentPeriod ? "ghost" : "secondary"}
+          variant="ghost"
           size="sm"
-          className="text-xs h-7 px-2"
+          className={`text-xs h-7 px-2.5 rounded-lg transition-all ${
+            isCurrentPeriod
+              ? "text-muted-foreground/40 cursor-default"
+              : "text-primary hover:bg-primary/10 hover:text-primary font-semibold"
+          }`}
           disabled={isCurrentPeriod}
           onClick={onToday}
         >
@@ -94,10 +108,13 @@ function PeriodNavigator({
       </div>
 
       {/* Period type selector */}
-      <div className="flex items-center rounded-lg border bg-muted p-1 gap-1">
+      <div className="flex items-center rounded-xl border border-border/60 bg-muted/80 shadow-sm p-1 gap-0.5">
         <Button
           variant={period === "semana" ? "default" : "ghost"}
           size="sm"
+          className={`h-7 rounded-lg text-xs transition-all ${
+            period !== "semana" ? "text-muted-foreground hover:text-foreground hover:bg-background/60" : ""
+          }`}
           onClick={() => onPeriodChange("semana")}
         >
           Semana
@@ -105,6 +122,9 @@ function PeriodNavigator({
         <Button
           variant={period === "mes" ? "default" : "ghost"}
           size="sm"
+          className={`h-7 rounded-lg text-xs transition-all ${
+            period !== "mes" ? "text-muted-foreground hover:text-foreground hover:bg-background/60" : ""
+          }`}
           onClick={() => onPeriodChange("mes")}
         >
           Mês
